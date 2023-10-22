@@ -3,9 +3,9 @@
 | Date | Hours |
 | ---- | ----- |
 | Oct 16 | 0.5 |
-| Oct 21 | 1.75 | Updated at 2:30 PM
+| Oct 21 | 3.0 | Updated at 8:30 PM
 
-Total: 2.25 (Last updated on Oct 21 at 2:30 PM)
+Total: 3.5 (Last updated on Oct 21 at 8:30 PM)
 
 
 # Random Resources
@@ -56,6 +56,10 @@ https://projet.liris.cnrs.fr/imagine/pub/proceedings/ECCV-2014/papers/8689/86890
 https://www.cs.jhu.edu/~misha/ReadingSeminar/Papers/Triggs00.pdf
 
 - "Bundle Adjustment — A Modern Synthesis", 75 page paper from 2000
+
+https://scipy-cookbook.readthedocs.io/items/bundle_adjustment.html
+
+- Example of bundle adjustment using scipy (probably a decent starting place to see how this might be implemented)
 
 ## YouTube Videos that I watched
 
