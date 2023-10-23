@@ -17,5 +17,5 @@ Weekly touch base - **Tuesdays at 12pm on Discord**
 - [ ] Dane - Camera Pose Estimation & Triangulation
 - [ ] Kalin - GTSAM for Structure from Motion (steps 5 & 6)
 - [X] Chad - Gather videos (simple objects)
-- [ ] Chad - Calibrate camera
+- [X] Chad - Calibrate camera
 - [ ] Chad - Parse them into frames, get SIFT feature points, and do feature correspondence/matching
