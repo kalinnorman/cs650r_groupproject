@@ -8,7 +8,7 @@ CHESSBOARD_SIZE = (5,7)
 IMG_SIZE = (1280,720)
 
 
-def calibration(obj_pts, img_pts):
+def save_calibration(obj_pts, img_pts):
     ret, cam_mat, dist, rvecs, tvecs = cv2.calibrateCamera(obj_pts, img_pts, IMG_SIZE, None, None)
     # Save calibration results
     pkl.dump((cam_mat, dist), open("calibration.pkl", "wb"))
@@ -29,7 +29,7 @@ if __name__ == '__main__':
     img_pts = [] # 2D points in image plane
 
     images = natsorted(os.listdir("calibration_imgs")) # read in images
-
+    cv2.namedWindow('Img',cv2.WINDOW_NORMAL)
     for image_name in images:
         img = cv2.imread("calibration_imgs/"+str(image_name))
         # print(img.shape)
@@ -52,10 +52,12 @@ if __name__ == '__main__':
             cv2.drawChessboardCorners(img,  CHESSBOARD_SIZE, corners_subpix, ret)
             cv2.imshow('Img', img)
             cv2.waitKey(1000)
+        else:
+            print("No corners found for image",image_name)
 
     cv2.destroyAllWindows()
 
-    calibration(obj_pts, img_pts)
+    save_calibration(obj_pts, img_pts)
 
 '''
 -- Undistort Example --

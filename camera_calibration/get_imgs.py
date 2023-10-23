@@ -6,7 +6,7 @@ img_cnt = 0
 
 while cap.isOpened():
     success, img = cap.read()
-    if success and img_cnt % 20 == 0:
+    if success and img_cnt % 10 == 0:
         print("Writing Image",img_cnt)
         cv2.imwrite("calibration_imgs/img"+str(img_cnt)+".png", img)
     elif not success:
