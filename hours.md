@@ -4,4 +4,4 @@
 | Date | Worked on? | Time (hrs) |
 |------|------------|-------|
 |10/17 |Object image data collection, checkerboard data collection and camera callibration| 2 |
-|10/23 |  |  |
+|10/23 | Fixed camera calibration with images instead of a video, wrote script to find matching feature points between two images | 1.75 |
