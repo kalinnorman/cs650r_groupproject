@@ -18,4 +18,4 @@ Weekly touch base - **Tuesdays at 12pm on Discord**
 - [ ] Kalin - GTSAM for Structure from Motion (steps 5 & 6)
 - [X] Chad - Gather videos (simple objects)
 - [X] Chad - Calibrate camera
-- [ ] Chad - Parse them into frames, get SIFT feature points, and do feature correspondence/matching
+- [X] Chad - Parse them into frames, get SIFT feature points, and do feature correspondence/matching
