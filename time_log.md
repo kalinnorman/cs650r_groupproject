@@ -1,11 +1,12 @@
 # Hours Spent Working on Project
 
-| Date | Hours |
-| ---- | ----- |
-| Oct 16 | 0.5 |
-| Oct 21 | 3.0 | Updated at 8:30 PM
+| Date   | Hours |
+| ------ | ----- |
+| Oct 16 | 0.5   |
+| Oct 21 | 3.0   |
+| Oct 24 | 2.5   | Updated at 3:00 pm
 
-Total: 3.5 (Last updated on Oct 21 at 8:30 PM)
+Total: 6.0 (Last updated on Oct 24 at 3:00 PM)
 
 
 # Random Resources
@@ -60,6 +61,10 @@ https://www.cs.jhu.edu/~misha/ReadingSeminar/Papers/Triggs00.pdf
 https://scipy-cookbook.readthedocs.io/items/bundle_adjustment.html
 
 - Example of bundle adjustment using scipy (probably a decent starting place to see how this might be implemented)
+
+https://dl.acm.org/doi/pdf/10.1145/1486525.1486527
+
+- "SBA: A Software Package for Generic Sparse Bundle Adjustment", paper from 2009
 
 ## YouTube Videos that I watched
 
