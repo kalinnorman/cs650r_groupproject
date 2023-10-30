@@ -31,9 +31,11 @@ for i in range(num_imgs):
     # Read image
     img_filepath = os.path.join(imgs_dir, img_names[i])
     bgr_img = cv.imread(img_filepath)
-
-    cv.imshow('img', bgr_img)
-    cv.waitKey(0)
     # Convert to grayscale
     gray_img = cv.cvtColor(bgr_img, cv.COLOR_BGR2GRAY)
-
+    # Find keypoints and descriptors
+    kp, des = sift.detectAndCompute(gray_img, None)
+    # # (OPTIONAL) Draw keypoints on image
+    # kp_img = cv.drawKeypoints(gray_img, kp, None)
+    # cv.imshow('Keypoints', kp_img)
+    # cv.waitKey(0)
