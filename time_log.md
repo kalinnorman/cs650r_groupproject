@@ -5,9 +5,10 @@
 | Oct 16 | 0.5   |
 | Oct 21 | 3.0   |
 | Oct 24 | 2.75  |
-| Oct 25 | 0.25  | Updated at 10:45 am
+| Oct 25 | 0.25  | 
+| Oct 30 | 4.0   | Updated at 2:30 pm
 
-Total: 6.5 (Last updated on Oct 25 at 10:45 am)
+Total: 10.5 (Last updated on Oct 30 at 2:30 pm)
 
 
 # Random Resources
