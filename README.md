@@ -19,4 +19,4 @@ Weekly touch base - **Tuesdays at 12pm on Discord**
 - [X] Chad - Gather videos (simple objects)
 - [X] Chad - Calibrate camera
 - [X] Chad - Parse them into frames, get SIFT feature points, and do feature correspondence/matching
-- [ ] Chad - Find Open Source implementation of SfM OR how to turn a sparse PC into a dense PC
+- [ ] Chad - Find Open Source implementation of SfM (https://opensfm.org/docs/building.html) OR how to turn a sparse PC into a dense PC
