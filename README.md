@@ -26,13 +26,13 @@ pip install -r requirements.txt
 4. Build Docker container (for Ubuntu systems)
 
 ~~~
-docker build -t sfm .
+docker build -t <docker_container_name> .
 ~~~
 
 5. Create and run Docker image
 
 ~~~
-docker run -it --rm sfm
+docker run --network="host" -it --rm <docker_container_name>
 ~~~
 
 6. Build OpenSfM
@@ -41,7 +41,7 @@ docker run -it --rm sfm
 python3 setup.py build
 ~~~
 
-7. Not currently working -> (Optional) To build documentation and browse locally at http://localhost:8000/
+7. Not working properly (visit `https://opensfm.org/docs` instead) -> (Optional) To build documentation and browse locally at http://localhost:8000/
 ~~~
 python3 setup.py build_doc
 python3 -m http.server --directory build/doc/html/
@@ -56,12 +56,12 @@ If build error with no sphinx_rtd_theme, run `pip install sphinx-rtd-theme`.
 
 - Build Docker container
 ~~~
-docker build -t sfm .
+docker build -t <docker_container_name> .
 ~~~
 
 - To run `localhost` while in the Docker container, start container with this command: 
 ~~~
-docker run --network="host" -it --rm sfm
+docker run --network="host" -it --rm <docker_container_name>
 ~~~
 
 - While container is running, find contained id by running the following command and copy it
@@ -73,3 +73,8 @@ docker container ls
 ~~~
 sudo docker cp <container_id>:/container/file/location /host/file/location
 ~~~
+
+<!-- - Setup Docker file syncing (doesn't allow me to run code with python errors)
+~~~
+docker run --network="host" -it -v /path/on/host:/path/in/container sfm
+~~~ -->
