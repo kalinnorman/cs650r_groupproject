@@ -13,6 +13,7 @@ img_filetype = '.dng'
 intrinsic_matrix = np.array([[925.79882927,   0.,         635.51907178], # Intrinsic matrix (from camera calibration)
                              [  0.,         923.71342657, 483.87251378],
                              [  0.,           0.,           1.        ]])
+distortion_coeffs = np.array([[0.0937379544, -0.360357661, 0.000903468189, 0.000267717772, 0.589424854]])
 
 # Useful directories
 file_dir = '/'.join(__file__.split('/')[:-1])
@@ -40,6 +41,10 @@ for i in range(num_imgs):
     # Read image
     img_filepath = os.path.join(imgs_dir, img_names[i])
     bgr_img = cv.imread(img_filepath)
+    # bgr_img = cv.undistort(bgr_img, intrinsic_matrix, distortion_coeffs)
+    # cv.imshow('img', bgr_img)
+    # cv.waitKey(0)
+    # exit()
     # Convert to grayscale
     gray_img = cv.cvtColor(bgr_img, cv.COLOR_BGR2GRAY)
     # Find keypoints and descriptors
@@ -107,10 +112,18 @@ for i in range(num_imgs):
         
         # Estimate the essential matrix
         E = intrinsic_matrix.T @ F @ intrinsic_matrix
-        # Estimate the camera pose from the essential matrix and triangulation
+        # Estimate the camera pose from the essential matrix
         retval, R, t, mask = cv.recoverPose(E, pts_prev_inlier, pts_curr_inlier, intrinsic_matrix)
-        # TODO: Need to get 3d points, and better translation, as the above only gets a unit vector in the direction, and does not account for scale / units
-        
+        # Construct projection matrices
+        P_prev = intrinsic_matrix @ np.hstack((np.eye(3), np.zeros((3,1))))
+        P_curr = intrinsic_matrix @ np.hstack((R, t))
+        # Triangulate to estimate 3D points
+        pts_3d_homogenous = cv.triangulatePoints(P_prev, P_curr, pts_prev_inlier.T, pts_curr_inlier.T)
+        pts_3d = (pts_3d_homogenous[:3, :] / pts_3d_homogenous[3,:]).T # N x 3 array
+        fig = plt.figure()
+        ax = fig.add_subplot(111, projection='3d')
+        ax.scatter(pts_3d[:,0], pts_3d[:,1], pts_3d[:,2])
+        plt.show()
     # Update previous variables
     prev_bgr_img = bgr_img.copy()
     prev_gray_img = gray_img.copy()

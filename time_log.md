@@ -7,10 +7,10 @@
 | Oct 24 | 2.75  |
 | Oct 25 | 0.25  |
 | Oct 30 | 5.5   |
-| Oct 31 | 3.5   | Updated on Oct 31 at 5:00 pm
-|        |       |
+| Oct 31 | 3.5   |
+| Nov 07 | 4.0   | Updated Nov 07 end of day
 
-Total: 15.5 (Last updated on Oct 31 at 5:00 pm)
+Total: 19.5 (Last updated on Nov 07 at end of day)
 
 
 # Random Resources
