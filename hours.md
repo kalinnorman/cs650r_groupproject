@@ -7,5 +7,5 @@
 |10/23 | Fixed camera calibration with images instead of a video, wrote script to find matching feature points between two images | 1.75 |
 |10/31 | Installed OpenSfM and began digging into it | 0.75 |
 |11/7  | Got OpenSfM working with Docker Containers & tested on Elephant data (only 2 images are being used so far) | 5
-|  |  |  |
-|| **Total hours worked thus far** | **9.5** |
+|11/14 | Fixed OpenSfM bad results, to get really good results on PB container with simply more images  | 3 |
+|| **Total hours worked thus far** | **12.5** |

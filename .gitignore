@@ -6,6 +6,10 @@ __pycache__/
 # C extensions
 *.so
 
+# Don't Copy over large .ply SfM models
+*.ply
+
+
 # Distribution / packaging
 .Python
 build/
