@@ -8,4 +8,6 @@
 |10/31 | Installed OpenSfM and began digging into it | 0.75 |
 |11/7  | Got OpenSfM working with Docker Containers & tested on Elephant data (only 2 images are being used so far) | 5
 |11/14 | Fixed OpenSfM bad results, to get really good results on PB container with simply more images. Began looking at converting a sparse point cloud to a dense one | 3 |
-|| **Total hours worked thus far** | **12.5** |
+| 11/16 | Learning about Signed Distance Fields and densification of sparse point clouds |  1 |
+| 11/18 | Densification of Sparse Point Clouds | 1.5 |
+|| **Total hours worked thus far** | **15** |
