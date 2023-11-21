@@ -48,27 +48,63 @@ class BundleAdjustment:
         points_3d should be an array containing all of the 3D points where each row of the array is of the form: [x, y, z] and the index of the row corresponds to the point_id in points_2d
         method should be a ProjectionMethod enum value, with those options being: PROJECTION_MATRIX, PROJECTION_MATRIX_WITH_DISTORTION, DECOMPOSED_PROJECTION_MATRIX, DECOMPOSED_PROJECTION_MATRIX_WITH_DISTORTION
         '''
-        # If the method is meant to use distortion, check that distortion parameters have been passed in
-        if method == ProjectionMethod.PROJECTION_MATRIX_WITH_DISTORTION or method == ProjectionMethod.DECOMPOSED_PROJECTION_MATRIX_WITH_DISTORTION:
-            if distortion_params is None:
-                raise ValueError("Distortion parameters must be provided for this projection method")
-        # If the method is NOT a decomposed projection method, combine the camera intrinsics and extrinsics into a single projection matrix
-        if method == ProjectionMethod.PROJECTION_MATRIX or method == ProjectionMethod.PROJECTION_MATRIX_WITH_DISTORTION:
-            # Create a list with the parameters for the projection matrix for each camera pose
-            projection_matrix_params = []
-            for camera_pose in camera_poses:
-                proj_mtx = K @ camera_pose.reshape((3, 4))
-                projection_matrix_params.append(proj_mtx.flatten())
-            # Convert the list to an array
-            projection_matrix_params = np.array(projection_matrix_params)
-        # If the method is a decomposed projection method, convert the camera intrinsic matrix to a vector of the form [fx, fy, cx, cy]
-        elif method == ProjectionMethod.DECOMPOSED_PROJECTION_MATRIX or method == ProjectionMethod.DECOMPOSED_PROJECTION_MATRIX_WITH_DISTORTION:
-            # Convert the camera intrinsic matrix to a vector
-            K = np.array([K[0,0], K[1,1], K[0,2], K[1,2]])
 
+        # Before being able to run the optimization, we need to convert everything into a vector of expected outputs and a vector of parameters to fine tune
+        # Following the notation of the "SBA: A Software Package for Generic Sparse Bundle Adjustment" paper, we will need to construct P and X
+        P = np.array([])
+        X = np.array([])
+        m = 0
+        n = 0
+        # Each method requires slight tweaks to the construction of P, so first handle all of the unique stuff
+        match method:
+            case ProjectionMethod.PROJECTION_MATRIX:
+                # First put in all of the parameters related to the camera (this is denoted by a_m in the paper)
+                for pose in camera_poses:
+                    proj_mtx = K @ pose.reshape((3, 4))
+                    P = np.append(P, proj_mtx.flatten())
+                    m += 1
+            case ProjectionMethod.PROJECTION_MATRIX_WITH_DISTORTION:
+                # First put in the distortion parameters (these are constant for all images, so it's going to be right before the a's)
+                P = np.append(P, distortion_params)
+                # Then put in all of the other parameters related to the camera (this is denoted by a_m in the paper)
+                for pose in camera_poses:
+                    proj_mtx = K @ pose.reshape((3, 4))
+                    P = np.append(P, proj_mtx.flatten())
+                    m += 1
+            case ProjectionMethod.DECOMPOSED_PROJECTION_MATRIX:
+                # First put in the camera intrinsics (these are constant for all images, so it's going to be right before the a's)
+                P = np.append(P, np.array([K[0,0], K[1,1], K[0,2], K[1,2]]))
+                # Then put in all of the parameters related to the camera poses (this is denoted by a_m in the paper)
+                for pose in camera_poses:
+                    P = np.append(P, pose)
+                    m += 1
+            case ProjectionMethod.DECOMPOSED_PROJECTION_MATRIX_WITH_DISTORTION:
+                # First put in the camera intrinsics and distortion parameters (these are constant for all images, so it's going to be right before the a's)
+                P = np.append(P, np.array([K[0,0], K[1,1], K[0,2], K[1,2]]))
+                P = np.append(P, distortion_params)
+                # Then put in all of the parameters related to the camera poses (this is denoted by a_m in the paper)
+                for pose in camera_poses:
+                    P = np.append(P, pose)
+                    m += 1
+            case _:
+                raise ValueError("Invalid projection method")  
+        # We can now add in the 3D points to P (this is denoted by b_n in the paper)
+        for point in points_3d:
+            P = np.append(P, point)
+            n += 1
+        # Now that we have P, we can construct X
+        # TODO - I'm not entirely certain how to handle situations where we have say 100 points total, but only ten of them are in the first image. What does that look like in this array?
 
+        # Now that we have P and X, we can run Levenberg-Marquardt to optimize the parameters
+        # TODO
+
+        # Extract the corrected camera poses and 3D points from the optimized parameters
+        corrected_camera_poses = np.array([])
+        corrected_points_3d = np.array([])
+        # TODO
         
-        return None, None
+        # Return the corrected camera poses and 3D points
+        return corrected_camera_poses, corrected_points_3d
     
     def _apply_distortion(self, point_2d, dist_coeffs, K) -> np.ndarray:
         '''
