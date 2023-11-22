@@ -8,7 +8,7 @@ class ProjectionMethod(Enum):
     PROJECTION_MATRIX = 0 # Solve the 12 parameters of the projection matrix, which is created by K @ [R | t], and the 3 parameters of the 3D point
     PROJECTION_MATRIX_WITH_DISTORTION = 1 # Solve for the 12 paramters of the projection matrix, the 5 distortion parameters, and the 3 parameters of the 3D point
     DECOMPOSED_PROJECTION_MATRIX = 2 # Solve for the 4 camera intrinsics parameters, the 9 camera rotation parameters, the 3 camera translation parameters, and the 3 parameters of the 3D point
-    DECOMPOSED_PROJECTION_MATRIX_WITH_DISTORTION = # Solve for the 4 camera intrinsics parameters, the 9 camera rotation parameters, the 3 camera translation parameters, the 5 distortion parameters, and the 3 parameters of the 3D point
+    DECOMPOSED_PROJECTION_MATRIX_WITH_DISTORTION = 3 # Solve for the 4 camera intrinsics parameters, the 9 camera rotation parameters, the 3 camera translation parameters, the 5 distortion parameters, and the 3 parameters of the 3D point
 
 class BundleAdjustment:
     def __init__(self, K, dist) -> None:
@@ -304,3 +304,25 @@ if __name__ == "__main__":
     intrinsic_matrix = np.array([[925.79882927,   0.,         635.51907178],
                                  [  0.,         923.71342657, 483.87251378],
                                  [  0.,           0.,           1.        ]])
+    R1 = np.eye(3)
+    t1 = np.zeros((3, 1))
+    P1 = intrinsic_matrix @ np.block([[R1, t1]])
+    R2 = np.eye(3)
+    t2 = np.array([[1, 0, 0]]).T
+    P2 = intrinsic_matrix @ np.block([[R2, t2]])
+    R3 = np.eye(3)
+    t3 = np.array([[2, 0, 0]]).T
+    P3 = intrinsic_matrix @ np.block([[R3, t3]])
+
+    points_3d = np.array([[0],
+                          [0],
+                          [100]])
+    
+    points_2d_1 = P1 @ np.append(points_3d, 1)
+    points_2d_2 = P2 @ np.append(points_3d, 1)
+    points_2d_3 = P3 @ np.append(points_3d, 1)
+
+    print(points_2d_1[:2] / points_2d_1[2])
+    print(points_2d_2[:2] / points_2d_2[2])
+    print(points_2d_3[:2] / points_2d_3[2])
+    
