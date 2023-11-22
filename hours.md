@@ -11,5 +11,6 @@
 | 11/16 | Learning about Signed Distance Fields and densification of sparse point clouds | 1 |
 | 11/18 | Densification of Sparse Point Clouds | 1.5 |
 | 11/20 | Dense Point Clouds Continued | 4.5 |
-|| **Total hours worked thus far** | **19.5** |
-|| **Hours Remaining out of 80  hours required** | **60.5** |
+| 11/21 | Stereo View Algorithm/Method to build a Dense Depth Map | 1.25 |
+|| **Total hours worked thus far** | **20.75** |
+|| **Hours Remaining out of 80  hours required** | **59.25** |
