@@ -12,5 +12,6 @@
 | 11/18 | Densification of Sparse Point Clouds | 1.5 |
 | 11/20 | Dense Point Clouds Continued | 4.5 |
 | 11/21 | Stereo View Algorithm/Method to build a Dense Depth Map | 1.25 |
-|| **Total hours worked thus far** | **20.75** |
-|| **Hours Remaining out of 80  hours required** | **59.25** |
+| 11/22 | Stereo View Algorithm/Method to build a Dense Depth Map, watching 4.1 lecture on https://www.youtube.com/watch?v=6hr6xpOU-uw&t=3s (cont.) | 1.25 |
+|| **Total hours worked thus far** | **21.5** |
+|| **Hours Remaining out of 80  hours required** | **58.5** |
