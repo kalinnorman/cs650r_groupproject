@@ -1,11 +1,28 @@
 # Research Notes and Papers
 
-1. Densify Sparse Point Cloud
-2. Remove Outliers
-3. Estimate Normals of points
-4. Get a surface from the Point Cloud using Poisson Surface Reconstruction
+Usefull Python Library: Open3D = New Python Library as of 2019 that is the software behind displaying 3D geometries
 
-- Open3D = New Python Library as of 2019 that is the software behind displaying 3D geometries
+## My Densification Plan
+- Test on two basic images:
+- [ ] Get camera poses and parameters (intrinsic and extrinsic) from OpenSfM
+- [ ] Radially Undistort left and right images
+- [ ] Get Epipolar geometry from OpenSfM
+- [ ] Perform Image Rectification
+  - [ ] Estimate Essential matrix
+  - [ ] Decompose Essential matrix in $t$, $R$. 
+  - [ ] Construct $R_{rect}$ from $t$ and $R$.
+  - [ ] Warp pixels in left and right images
+- [ ] Compute Disparity map (Winner-Takes-All approach)
+  - [ ] Choose disparity range based on point cloud in images
+  - [ ] Do left-right consistency to remove outliers
+- [ ] Get depth from disparity: $Z = \frac{f b}{d}$, where $f$ is the focal length, $b$ is the baseline between rectified images, and $d$ is the disparity value.
+- [ ] (Poss) Add in global consistency method to encourage smoothness with Markov Random Fields (MRF)
+- [ ] Run previous steps on all images
+- [ ] Combine dense point clouds across all cameras, removing outliers/inconsistencies, to get a dense 3D point cloud of scene
+
+## My surface mesh building plan
+- [ ] Estimate normals of dense points
+- [ ] Get a surface from the Point Cloud using Poisson Surface Reconstruction
 
 ## Densify the feature Point Cloud specifically from the SfM Algorithm
 - **Stereo-Matching**: Potentially use "Pixelwise View Selection for Unstructured Multi-View Stereo" (ECCV 2016)
@@ -17,21 +34,17 @@
         4. Depth calculation: Use the disparity information and the baseline distance between the cameras to calculate the depth for each pixel.
 - **Use depth sensors** (e.g. LiDAR or Time-of-Flight Cameras)
 
-
 ## Densification of a Sparse Point Cloud
 
 - TSDF (Truncated Signed Distance Field)
 - CMVS/PMVS, Multi-View Environment (MVE), Shading-Aware Multi-View Stereo (SMVS)
 
-
 ## Or just jump straight to Differentiable Surface Splatting
 
 - https://www.youtube.com/watch?v=MIu59GiJZ2s
-- 
 
 ## To get surfaces from Point clouds
 - https://www.youtube.com/watch?v=C_WwL2mhxfw (do Poisson Surface Reconstruction)
-- 
 
 ## ColMap Approach
 *Multi-View Stereo (MVS) takes the output of SfM to compute depth and/or normal information for every pixel in an image. Fusion of the depth and normal maps of multiple images in 3D then produces a dense point cloud of the scene. Using the depth and normal information of the fused point cloud, algorithms such as the (screened) Poisson surface reconstruction [kazhdan2013] can then recover the 3D surface geometry of the scene. More information on Multi-View Stereo in general and the algorithms in COLMAP can be found in [schoenberger16mvs].*
