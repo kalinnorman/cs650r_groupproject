@@ -14,6 +14,7 @@
 | 11/21 | Stereo View Algorithm/Method to build a Dense Depth Map | 1.25 |
 | 11/22 | Stereo View Algorithm/Method to build a Dense Depth Map, watching 4.1 lecture on https://www.youtube.com/watch?v=6hr6xpOU-uw&t=3s (cont.) | 1.25 |
 | 11/24 | Stereo View Algorithm/Method to build a Dense Depth Map, watched 4.1-4.2 lecture (cont.) | 1 |
-| 11/25 | Stereo View Algorithm/Method to build a Dense Depth Map, watched 4.3-4.5 lecture (cont.). Outlined Densification plans. | 1pm-5pm |
-|| **Total hours worked thus far** | **22.5** |
-|| **Hours Remaining out of 80  hours required** | **57.5** |
+| 11/25 | Stereo View Algorithm/Method to build a Dense Depth Map, watched 4.3-4.5 lecture (cont.). Outlined Densification plans. | 4 |
+| 11/27 | Writing code to undistort images | 1 |
+|| **Total hours worked thus far** | **27** |
+|| **Hours Remaining out of 80  hours required** | **53** |
