@@ -89,12 +89,12 @@ class BundleAdjustment:
             case _:
                 raise ValueError("Invalid projection method")  
         # We can now add in the 3D points to P (this is denoted by b_n in the paper)
-        for point in points_3d:
-            P = np.append(P, point)
+        for point_3d in points_3d:
+            P = np.append(P, point_3d)
             n += 1
         # Now that we have P, we can construct X
-        # TODO - I'm not entirely certain how to handle situations where we have say 100 points total, but only ten of them are in the first image. What does that look like in this array?
-
+        # Note that we skip over any 'missing' points so this array will not be of length n x m, but will be shorter than that
+        # TODO - Need this to be vector with (all location of point 1 in the m camera views, all locations of point 2 in the m camera views, and so on)
         # Now that we have P and X, we can run Levenberg-Marquardt to optimize the parameters
         # TODO
 

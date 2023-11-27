@@ -12,9 +12,10 @@
 | Nov 15 | 4.0   |
 | Nov 17 | 3.0   |
 | Nov 20 | 2.0   |
-| Nov 21 | 3.0   | Updated 4:30 pm
+| Nov 21 | 3.0   |
+| Nov 27 | 4.0   | Updated at 4:00 pm
 
-Total: 31.5 (Last updated on Nov 21 at 4:30 pm)
+Total: 35.5 (Last updated on Nov 27 at 4:00 pm)
 
 
 # Random Resources
