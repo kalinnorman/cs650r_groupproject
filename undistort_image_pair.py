@@ -2,7 +2,7 @@ import os
 import json
 import argparse
 import numpy as np
-
+import pickle as pkl
 import cv2
 
 '''
@@ -91,23 +91,61 @@ Radial Distortion (what OpenSfM does):
 x_dist = x ( 1 + k1 * r^2 + k2 * r^4 )
 y_dist = y ( 1 + k1 * r^2 + k2 * r^4 )
 '''
+# def undistort_image(distorted_image, k1, k2, p1, p2, k3):
+#     height, width = distorted_image.shape[:2]
+#     center = (width / 2, height / 2)
 
-def get_cam_intrinsics(camera):
-    f = camera["focal"]
-    cx = camera["width"]//2
-    cy = camera["height"]//2
-    K = np.array([
-        [f,0,cx],
-        [0,f,cy],
-        [0,0,1]
-    ])
-    return K
+#     # Create a grid of coordinates
+#     x, y = np.meshgrid(np.arange(width), np.arange(height))
+
+#     # Convert coordinates to radial distance
+#     r = np.sqrt((x - center[0])**2 + (y - center[1])**2)
+
+#     # Apply radial distortion correction
+#     r_corr = r * (1 + k1 * r**2 + k2 * r**4 + k3 * r**6)
+
+#     # Correct tangential distortion
+#     dx = 2 * p1 * x * y + p2 * (r**2 + 2 * x**2)
+#     dy = p1 * (r**2 + 2 * y**2) + 2 * p2 * x * y
+
+#     # Apply distortion correction
+#     x_corr = x + dx
+#     y_corr = y + dy
+
+#     # Perform bilinear interpolation to get undistorted image
+#     x_floor = np.floor(x_corr).astype(int)
+#     y_floor = np.floor(y_corr).astype(int)
+
+#     x_frac = x_corr - x_floor
+#     y_frac = y_corr - y_floor
+
+#     x_floor = np.clip(x_floor, 0, width - 2)
+#     y_floor = np.clip(y_floor, 0, height - 2)
+
+#     undistorted_image = (
+#         (1 - x_frac) * (1 - y_frac) * distorted_image[y_floor, x_floor] +
+#         x_frac * (1 - y_frac) * distorted_image[y_floor, x_floor + 1] +
+#         (1 - x_frac) * y_frac * distorted_image[y_floor + 1, x_floor] +
+#         x_frac * y_frac * distorted_image[y_floor + 1, x_floor + 1]
+#     ).astype(np.uint8)
+
+#     return undistorted_image
+
+# def get_cam_intrinsics(camera_params):
+#     f = camera_params["focal"]
+#     cx = camera_params["width"]//2
+#     cy = camera_params["height"]//2
+#     K = np.array([
+#         [f,0,cx],
+#         [0,f,cy],
+#         [0,0,1]
+#     ])
+#     return K
 
 def read_args():
     parser = argparse.ArgumentParser()
     parser.add_argument('--sfm_recon',type=str,help='/path/to/reconstruction.json')
-    parser.add_argument('--left_img_name',type=str,default="l",help='left image name (as appears in reconstruction file')
-    parser.add_argument('--right_img_name',type=str,default="r",help='right image name (as appears in reconstruction file')  
+    parser.add_argument('--cam_cal',help='/path/to/camera/calibration/parameters.pkl')
     return parser
 
 if __name__ == '__main__':
@@ -123,32 +161,29 @@ if __name__ == '__main__':
     ## Get test image
     img_path = os.path.dirname(args['sfm_recon'])
     img_name = list(reconstruction_data["shots"].keys())[0]
-    print("img_path:",img_path,"img_name:",img_name,"combined:",img_path + "/images/" + img_name)
+    # print("img_path:",img_path,"img_name:",img_name,"combined:",img_path + "/images/" + img_name)
     img = cv2.imread(img_path + "/images/" + img_name)
 
-    ## Get distortion parameters
+    ## Get distortion parameters 
+    # OpenCV ordering: (k1,k2,p1,p2[,k3[,k4,k5,k6[,s1,s2,s3,s4[,τx,τy]]]]) of 4, 5, 8, 12 or 14 elements.
     # Should only have 1 camera type
     assert(len(reconstruction_data["cameras"]) == 1)
     camera_params = list(reconstruction_data["cameras"].values())[0]
-    cx, cy = camera_params["width"]//2, camera_params["height"]//2
-    K = get_cam_intrinsics(camera_params)
-    print("Intrinsics Matrix:\n",K)
-    dist_coeff = np.array([
-        camera_params["k1"],
-        camera_params["k2"],
-        0,0,
-    ]) # poss need two more zeros because 
-    #   these distortion coefficients (k1,k2,p1,p2[,k3[,k4,k5,k6[,s1,s2,s3,s4[,τx,τy]]]]) of 4, 5, 8, 12 or 14 elements.
-
+    width, height = camera_params["width"], camera_params["height"]
+    cx, cy = width//2, height//2
+    cal_file = open(args['cam_cal'],'rb')
+    K, dist_coeff = pkl.load(cal_file)
+    cal_file.close()
+    # print("Intrinsics Matrix:\n",K,f"\ncx: {cx}, cy: {cy}")
+    # print("Distortion Coefficients:",dist_coeff)
 
     ## Undistort Test Image
-    h,  w = camera_params["height"], camera_params["width"]
-    newcameramtx, roi = cv2.getOptimalNewCameraMatrix(K, dist_coeff, (w,h), 1, (w,h))
-    # x, y, w, h = roi
-    # undistorted_img = undistorted_img[y:y+h, x:x+w]
-    print("New Cam Mat:",newcameramtx,"roi:",roi)
-    
+    newcameramtx, roi = cv2.getOptimalNewCameraMatrix(K, dist_coeff, (width,height), 1, (width,height))
+    # print("New Cam Mat:\n",newcameramtx,"\nroi:",roi)
     undistorted_img = cv2.undistort(img, K, dist_coeff, None, newcameramtx)
+    x, y, w, h = roi
+    undistorted_img = undistorted_img[y:y+h, x:x+w]
+    undistorted_img = cv2.resize(undistorted_img, (width,height)) # Original Image size
     cv2.namedWindow('Original Image', cv2.WINDOW_NORMAL)
     cv2.imshow("Original Image", img)
     cv2.namedWindow('Undistorted Image', cv2.WINDOW_NORMAL)
@@ -156,17 +191,19 @@ if __name__ == '__main__':
     cv2.waitKey(0)
     cv2.destroyAllWindows()
 
-    # # Access camera poses
-    # for shot_id, shot_data in reconstruction_data['shots'].items():
-    #     # pose = shot_data['pose']
-    #     print(f"Camera {shot_id} pose:")
-    #     print("Rotation Matrix (axis-angle form):")
-    #     print(shot_data['rotation'])
-    #     print("Translation Vector:")
-    #     print(shot_data['translation'])
-    #     print("\n")
-    #     break
-
+    # Access camera images
+    for shot_id, shot_data in reconstruction_data['shots'].items():
+        print("Undistorting Image:",shot_id)
+        # Read Image
+        img = cv2.imread(img_path + "/images/" + shot_id)
+        
+        # Undistort Image
+        undistorted_img = cv2.undistort(img, K, dist_coeff, None, newcameramtx)
+        x, y, w, h = roi
+        undistorted_img = undistorted_img[y:y+h, x:x+w]
+        undistorted_img = cv2.resize(undistorted_img, (width,height))
+        # Save Image
+        cv2.imwrite(img_path + "/undistorted_images/undistorted_" + shot_id, undistorted_img)
 
     '''
     """Undistort an image into a set of undistorted ones.

@@ -4,14 +4,13 @@ Usefull Python Library: Open3D = New Python Library as of 2019 that is the softw
 
 ## My Densification Plan
 - Test on two basic images:
-- [ ] Get camera poses and parameters (intrinsic and extrinsic) from OpenSfM
-- [ ] Radially Undistort left and right images
-- [ ] Get Epipolar geometry from OpenSfM
+- [x] Get camera poses and parameters (intrinsic and extrinsic) from OpenSfM
+- [x] Radially Undistort left and right images
 - [ ] Perform Image Rectification
-  - [ ] Estimate Essential matrix
-  - [ ] Decompose Essential matrix in $t$, $R$. 
-  - [ ] Construct $R_{rect}$ from $t$ and $R$.
-  - [ ] Warp pixels in left and right images
+  - [-] Estimate Essential matrix
+  - [x] Decompose Essential matrix in $t$, $R$. OR Get Rotation & translation components from OpenSfM 
+  - [x] Construct $R_{rect}$ from $t$ and $R$.
+  - [x] Warp pixels in left and right images
 - [ ] Compute Disparity map (Winner-Takes-All approach)
   - [ ] Choose disparity range based on point cloud in images
   - [ ] Do left-right consistency to remove outliers
