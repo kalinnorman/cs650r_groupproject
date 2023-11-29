@@ -11,10 +11,19 @@
             "program": "${file}",
             "console": "integratedTerminal",
             "justMyCode": true,
+            
+            // Undistort Images
+            // "args": [
+            //     "--cam_cal=/home/student/cs650r_groupproject/camera_calibration/calibration.pkl",
+            //     "--img_data=/home/student/cs650r_groupproject/data/simple_objects/elephant/"
+            // ]
 
+            // Rectify Images
             "args": [
-                "--cam_cal=/home/student/cs650r_groupproject/camera_calibration/calibration.pkl",
-                "--img_data=/home/student/cs650r_groupproject/data/simple_objects/elephant/"
+                "--sfm_recon=/home/student/cs650r_groupproject/data/simple_objects/peanut_butter_lots_of_imgs/reconstruction_pb_lots_imgs.json",
+                "--cam_cal=camera_calibration/calibration.pkl",
+                "--left_img_path=/home/student/cs650r_groupproject/data/simple_objects/peanut_butter_lots_of_imgs/images/IMG_8778.jpg",
+                "--right_img_path=/home/student/cs650r_groupproject/data/simple_objects/peanut_butter_lots_of_imgs/images/IMG_8777.jpg"
             ]
         }
     ]
