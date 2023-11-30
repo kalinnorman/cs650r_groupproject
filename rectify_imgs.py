@@ -70,50 +70,34 @@ if __name__ == '__main__':
         elif img_name == r_img_name:
             Rr, _ = cv2.Rodrigues(np.array(img_data["rotation"]))#rot_mat_from_axisangle(img_data["rotation"])
             tr = np.array(img_data["translation"])
-    
-
-    # E = np.dot(np.linalg.inv(Rr),tr-tl)
-    # Hl = Rl + np.dot(tl,E.T)
-    # Hr = Rr + np.dot(tr,E.T)
-    # # Rectify the images using the homography matrices
-    # l_img_rect = cv2.warpPerspective(l_img, Hl, (l_img.shape[1], l_img.shape[0]))
-    # r_img_rect = cv2.warpPerspective(r_img, Hr, (r_img.shape[1], r_img.shape[0]))
-
-
-    # Construct the projection matrices
-    P_left = np.hstack((Rl, tl.reshape(3, 1)))
-    P_right = np.hstack((Rr, tr.reshape(3, 1)))
 
     # Compute the rectification transformations
-    R = Rr.T @ Rl
-    T = tr - tl
+    R = Rr @ Rl.T # R_w2r @ (Rw2l).T # resulting in a Rotation matrix from left frame to right frame
+    T = tr - tl # resulting in a translation vector from left frame to right frame
 
-    r1,r2,p1,p2,q,roi1,roi2 = cv2.stereoRectify(
-        K, dist_coeff, K, dist_coeff, l_img.shape[:2], R, T
-    )
+    # https://forum.opencv.org/t/unable-to-rectify-stereo-cameras-correctly/7543
+    cameraMatrixL = K
+    distL = dist_coeff
+    widthL, heightL = l_img.shape[1], l_img.shape[0]
+    cameraMatrixR = K
+    distR= dist_coeff
+    widthR, heightR = r_img.shape[1], r_img.shape[0]
 
-    # Apply rectification to the images
-    map_left_x, map_left_y = cv2.initUndistortRectifyMap(
-        K, 
-        dist_coeff, 
-        R=r2, 
-        newCameraMatrix=p2, 
-        size=l_img.shape[:2], 
-        m1type=cv2.CV_32FC1)
-    map_right_x, map_right_y = cv2.initUndistortRectifyMap(
-        K, 
-        dist_coeff, 
-        R=r1, 
-        newCameraMatrix=p1, 
-        size=r_img.shape[:2], 
-        m1type=cv2.CV_32FC1)
+    newCameraMatrixL, roi_L = cv2.getOptimalNewCameraMatrix(cameraMatrixL, distL, (widthL, heightL), 1, (widthL, heightL))
+    newCameraMatrixR, roi_R = cv2.getOptimalNewCameraMatrix(cameraMatrixR, distR, (widthR, heightR), 1, (widthR, heightR))
 
-    l_img_rect = cv2.remap(l_img, map_left_x, map_left_y, cv2.INTER_LINEAR)
-    r_img_rect = cv2.remap(r_img, map_right_x, map_right_y, cv2.INTER_LINEAR)
 
-    
-    # R = Rr.T @ Rl
-    # t = tr - tl
+    rectifyScale= 1
+    rectL, rectR, projMatrixL, projMatrixR, Q, roi_L, roi_R= cv2.stereoRectify(newCameraMatrixL, distL, newCameraMatrixR, distR, (widthL, heightL), R, T, rectifyScale,(0,0))
+    # for elem in Q:
+    #     print(np.round(elem))
+
+    stereoMapL = cv2.initUndistortRectifyMap(newCameraMatrixL, distL, rectL, projMatrixL, (widthL, heightL), cv2.CV_16SC2)
+    stereoMapR = cv2.initUndistortRectifyMap(newCameraMatrixR, distR, rectR, projMatrixR, (widthR, heightR), cv2.CV_16SC2)
+
+    l_img_rect = cv2.remap(l_img, stereoMapL[0], stereoMapL[1], cv2.INTER_LANCZOS4, cv2.BORDER_CONSTANT, 0)
+    r_img_rect = cv2.remap(r_img, stereoMapR[0], stereoMapR[1], cv2.INTER_LANCZOS4, cv2.BORDER_CONSTANT, 0)
+
 
     # # # Rotate Right image by applying the affine transformation to the image
     # # r_img_rot = cv2.warpAffine(r_img, R, (r_img.shape[1], r_img.shape[0]))

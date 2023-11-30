@@ -6,7 +6,7 @@ Usefull Python Library: Open3D = New Python Library as of 2019 that is the softw
 - Test on two basic images:
 - [x] Get camera poses and parameters (intrinsic and extrinsic) from OpenSfM
 - [x] Radially Undistort left and right images
-- [ ] Perform Image Rectification
+- [x] Perform Image Rectification - Ended up using OpenCV (poss later do by hand)
   - [-] Estimate Essential matrix
   - [x] Decompose Essential matrix in $t$, $R$. OR Get Rotation & translation components from OpenSfM 
   - [x] Construct $R_{rect}$ from $t$ and $R$.

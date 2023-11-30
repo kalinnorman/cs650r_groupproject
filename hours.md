@@ -17,6 +17,6 @@
 | 11/25 | Stereo View Algorithm/Method to build a Dense Depth Map, watched 4.3-4.5 lecture (cont.). Outlined Densification plans. | 4 |
 | 11/27 | Writing code to undistort images | 1 |
 | 11/28 | Writing code to undistort and rectify images | 3 |
-| 11/29 | Fixing rectification algorithm | 1.75 |
+| 11/29 | Fixing rectification algorithm | 1.75, 7:45pm- |
 || **Total hours worked thus far** | **32.75** |
 || **Hours Remaining out of 80  hours required** | **47.25** |
