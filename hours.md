@@ -18,5 +18,6 @@
 | 11/27 | Writing code to undistort images | 1 |
 | 11/28 | Writing code to undistort and rectify images | 3 |
 | 11/29 | Fixing rectification algorithm | 2.5 |
+| 11/30 | Coding up disparity calculations | 9:15am-9:45am, |
 || **Total hours worked thus far** | **33.5** |
 || **Hours Remaining out of 80  hours required** | **46.5** |

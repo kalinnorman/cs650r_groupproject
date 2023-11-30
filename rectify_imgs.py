@@ -19,16 +19,6 @@ def rot_mat_from_axisangle(axis_angle):
         (1 - np.cos(theta)) * S**2
     return R
 
-def read_args():
-    parser = argparse.ArgumentParser()
-    parser.add_argument('--sfm_recon',type=str,help='/path/to/reconstruction.json')
-    
-    parser.add_argument('--cam_cal',help='/path/to/camera/calibration/parameters.pkl')
-    
-    parser.add_argument('--left_img_path',type=str,default="l",help='left image path name (as appears in reconstruction file')
-    parser.add_argument('--right_img_path',type=str,default="r",help='right image path name (as appears in reconstruction file')  
-    return parser
-
 def get_cam_intrinsics(camera_params):
     f = camera_params["focal"]
     cx = camera_params["width"]//2
@@ -39,6 +29,20 @@ def get_cam_intrinsics(camera_params):
         [0,0,1]
     ])
     return K
+
+def calc_disparity(l_img,r_img,row_idx,col_idx,patch_sz):
+    for col_scanline in range(0+patch_sz//2, col_idx, patch_sz):
+        
+
+def read_args():
+    parser = argparse.ArgumentParser()
+    parser.add_argument('--sfm_recon',type=str,help='/path/to/reconstruction.json')
+    
+    parser.add_argument('--cam_cal',help='/path/to/camera/calibration/parameters.pkl')
+    
+    parser.add_argument('--left_img_path',type=str,default="l",help='left image path name (as appears in reconstruction file')
+    parser.add_argument('--right_img_path',type=str,default="r",help='right image path name (as appears in reconstruction file')  
+    return parser
 
 if __name__ == '__main__':
     ## Load Data
@@ -159,8 +163,26 @@ if __name__ == '__main__':
     cv2.imshow("Left Rectified Image", l_img_rect)
     cv2.namedWindow('Right Rectified Image', cv2.WINDOW_NORMAL)
     cv2.imshow("Right Rectified Image", r_img_rect)
-    cv2.waitKey(0)
+    cv2.waitKey(5000)
     cv2.destroyAllWindows()
 
     ## Begin disparity calculations
-    
+    # Check that the horizontal row between images are the same
+    # Display Rectified Images
+    nrows = 100
+    cv2.namedWindow('Left Image', cv2.WINDOW_NORMAL)
+    cv2.imshow("Left Image", l_img[l_img.shape[0]//2:l_img.shape[0]//2+nrows,:,:])
+    cv2.namedWindow('Right Image', cv2.WINDOW_NORMAL)
+    cv2.imshow("Right Image", r_img[l_img.shape[0]//2:l_img.shape[0]//2+nrows,:,:])
+    cv2.namedWindow('Left Rectified Image', cv2.WINDOW_NORMAL)
+    cv2.imshow("Left Rectified Image", l_img_rect[l_img.shape[0]//2:l_img.shape[0]//2+nrows,:,:])
+    cv2.namedWindow('Right Rectified Image', cv2.WINDOW_NORMAL)
+    cv2.imshow("Right Rectified Image", r_img_rect[l_img.shape[0]//2:l_img.shape[0]//2+nrows,:,:])
+    cv2.waitKey(0)
+    cv2.destroyAllWindows()
+
+    # Choose disparity range (m)
+    d_min, d_max = (0,3)
+
+    # For all pixels compute best disparity
+    patch_sz = 100
