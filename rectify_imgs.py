@@ -161,3 +161,6 @@ if __name__ == '__main__':
     cv2.imshow("Right Rectified Image", r_img_rect)
     cv2.waitKey(0)
     cv2.destroyAllWindows()
+
+    ## Begin disparity calculations
+    
