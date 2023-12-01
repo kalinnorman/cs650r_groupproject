@@ -28,10 +28,10 @@ if __name__ == '__main__':
     obj_pts = [] # 3D points in real world
     img_pts = [] # 2D points in image plane
 
-    images = natsorted(os.listdir("calibration_imgs")) # read in images
+    images = natsorted(os.listdir("shrunk_cal_images")) # read in images
     cv2.namedWindow('Img',cv2.WINDOW_NORMAL)
     for image_name in images:
-        img = cv2.imread("calibration_imgs/"+str(image_name))
+        img = cv2.imread("shrunk_cal_images/"+str(image_name))
         # print(img.shape)
         # cv2.imshow('Img', img)
         # cv2.waitKey(1000)
