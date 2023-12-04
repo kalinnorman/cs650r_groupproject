@@ -3,6 +3,8 @@ import numpy as np
 import cv2 as cv
 import os
 
+from triangulation import triangulate
+
 '''
 NOTE : This file is written in, and for, linux systems.
 '''
@@ -41,7 +43,7 @@ for i in range(num_imgs):
     # Read image
     img_filepath = os.path.join(imgs_dir, img_names[i])
     bgr_img = cv.imread(img_filepath)
-    # bgr_img = cv.undistort(bgr_img, intrinsic_matrix, distortion_coeffs)
+    bgr_img = cv.undistort(bgr_img, intrinsic_matrix, distortion_coeffs)
     # cv.imshow('img', bgr_img)
     # cv.waitKey(0)
     # exit()
@@ -120,10 +122,13 @@ for i in range(num_imgs):
         # Triangulate to estimate 3D points
         pts_3d_homogenous = cv.triangulatePoints(P_prev, P_curr, pts_prev_inlier.T, pts_curr_inlier.T)
         pts_3d = (pts_3d_homogenous[:3, :] / pts_3d_homogenous[3,:]).T # N x 3 array
+        pts_3d_alt = triangulate(intrinsic_matrix, E, R, pts_prev_inlier, pts_curr_inlier)
         fig = plt.figure()
         ax = fig.add_subplot(111, projection='3d')
         ax.scatter(pts_3d[:,0], pts_3d[:,1], pts_3d[:,2])
+        # ax.scatter(pts_3d_alt[:,0], pts_3d_alt[:,1], pts_3d_alt[:,2])
         plt.show()
+        exit()
     # Update previous variables
     prev_bgr_img = bgr_img.copy()
     prev_gray_img = gray_img.copy()

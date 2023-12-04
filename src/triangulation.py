@@ -1,6 +1,6 @@
 import numpy as np
 
-def triangulate(K, E, R, img_pts1, img_pts2, dist_params=None):
+def triangulate_lindstrom(K, E, R, img_pts1, img_pts2):
     """
     Triangulate points in two images using the camera matrices and the
     corresponding image points. The method herein is based on the paper:
@@ -19,8 +19,11 @@ def triangulate(K, E, R, img_pts1, img_pts2, dist_params=None):
         Image points in the first image.
     img_pts2 : numpy.ndarray (size (N,2))
         Image points in the second image.
-    dist_params : numpy.ndarray, optional (size (5,))
-        Distortion parameters (if set to 'None' then distortion is ignored).
+        
+    Returns
+    -------
+    pts_3d : numpy.ndarray (size (N,3))
+        Triangulated 3D points.
     """
     # Identify helpful values
     num_pts = img_pts1.shape[0]
@@ -92,4 +95,43 @@ def triangulate(K, E, R, img_pts1, img_pts2, dist_params=None):
     
     # return the 3D points
     return pts_3d
+        
+def triangulate_lm(K, R1, t, R2, t, pts1, pts2, dist_params=None):
+    '''
+    Triangulate points in the two images using the projection matrices and the
+    image coordinates of the matching points in the two images. 
+    Triangulation is performed using the Levenberg-Marquardt algorithm.
+    Distortion paramters can optionally be included if the images were
+    not previously undistorted.
+    
+    Parameters
+    ----------
+    K : numpy.ndarray (size (3,3))
+        Camera intrinsics matrix.
+    R1 : numpy.ndarray (size (3,3))
+        Rotation matrix for the first camera.
+    t1 : numpy.ndarray (size (3,1))
+        Translation vector for the first camera.
+    R2 : numpy.ndarray (size (3,3))
+        Rotation matrix for the second camera.
+    t2 : numpy.ndarray (size (3,1))
+        Translation vector for the second camera.
+    pts1 : numpy.ndarray (size (N,2))
+        Image points in the first image.
+    pts2 : numpy.ndarray (size (N,2))
+        Image points in the second image.
+    dist_params : numpy.ndarray (size (5,) or 'None')
+        Distortion parameters for the camera.
+        If 'None', then undistorted image points are assumed.
+    '''
+    def obj_func(optimization_params, other_variables, expected_vals):
+        '''
+        This is a residual function.
+        Calculates the difference between the measured image points and the
+        projected image points.
+        
+        Parameters
+        ----------
+        
+        '''
         
