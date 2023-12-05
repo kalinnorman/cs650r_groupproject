@@ -51,6 +51,21 @@ if __name__ == '__main__':
     depth_filepath += "/depth_images/"
     os.makedirs(depth_filepath, exist_ok=True)
     
+
+    # stereo = cv2.StereoBM_create(numDisparities=0, blockSize=5)#numDisparites=0, [nD=16, bS=21]
+    stereo = cv2.StereoSGBM_create(
+        minDisparity=-1,
+        numDisparities=32,
+        blockSize=5,
+        uniquenessRatio=5,
+        speckleWindowSize=5,
+        speckleRange=2, 
+        disp12MaxDiff=2,
+        P1=8*3*5**2,
+        P2=32*3*5**2,
+    )
+
+
     prev_img = None
     prev_name = None
     prev_R = None
@@ -83,34 +98,41 @@ if __name__ == '__main__':
         T_prev2cur = cur_T - prev_T
         prev_img_rect, cur_img_rect = img_rectifier.rectify(prev_img, cur_img, R_prev2cur, T_prev2cur)
 
-        # Display Rectified Images
-        cv2.namedWindow('Current Image', cv2.WINDOW_NORMAL)
-        cv2.imshow("Current Image", cur_img)
-        cv2.namedWindow('Previous Image', cv2.WINDOW_NORMAL)
-        cv2.imshow("Previous Image", prev_img)
-        cv2.namedWindow('Current Rectified Image', cv2.WINDOW_NORMAL)
-        cv2.imshow("Current Rectified Image", cur_img_rect)
-        cv2.namedWindow('Previous Rectified Image', cv2.WINDOW_NORMAL)
-        cv2.imshow("Previous Rectified Image", prev_img_rect)
-        cv2.waitKey(0)
-        cv2.destroyAllWindows()
+        l_img = cv2.cvtColor(prev_img,cv2.COLOR_BGR2GRAY)
+        r_img = cv2.cvtColor(cur_img,cv2.COLOR_BGR2GRAY)
+        depth_map = stereo.compute(l_img,r_img)
 
-        # Compute Image Disparity
-        print("Computing disparity for image",img_name)
-        disparity_img = disp.compute(cur_img, prev_img)
+        # # # Display Rectified Images
+        # # cv2.namedWindow('Current Image', cv2.WINDOW_NORMAL)
+        # # cv2.imshow("Current Image", cur_img)
+        # # cv2.namedWindow('Previous Image', cv2.WINDOW_NORMAL)
+        # # cv2.imshow("Previous Image", prev_img)
+        # # cv2.namedWindow('Current Rectified Image', cv2.WINDOW_NORMAL)
+        # # cv2.imshow("Current Rectified Image", cur_img_rect)
+        # # cv2.namedWindow('Previous Rectified Image', cv2.WINDOW_NORMAL)
+        # # cv2.imshow("Previous Rectified Image", prev_img_rect)
+        # # cv2.waitKey(0)
+        # # cv2.destroyAllWindows()
 
-        # Compute & Save Depth Image
-        print("Computing & Saving dense depth map for image",img_name)
-        f = img_rectifier.new_K[0,0]
-        b = np.linalg.norm(T_prev2cur,2)
-        depth_map = np.zeros_like(disparity_img)
-        for i in range(depth_map.shape[0]):
-            for j in range(depth_map.shape[1]):
-                if disparity_img[i,j] > 0:
-                    depth_map[i,j] = f * b / disparity_img[i,j]
-                else:
-                    depth_map[i,j] = 0
-        cv2.imwrite(depth_filepath + "depth_" + img_name[:-4] + "_with_" + prev_name, depth_map)
+        # # Compute Image Disparity
+        # print("Computing disparity for image",img_name)
+        # disparity_img = disp.compute(cur_img, prev_img)
+
+        # # Compute & Save Depth Image
+        # print("Computing & Saving dense depth map for image",img_name)
+        # f = img_rectifier.new_K[0,0]
+        # b = np.linalg.norm(T_prev2cur,2)
+        # depth_map = np.zeros_like(disparity_img)
+        # for i in range(depth_map.shape[0]):
+        #     for j in range(depth_map.shape[1]):
+        #         if disparity_img[i,j] > 0:
+        #             depth_map[i,j] = f * b / disparity_img[i,j]
+        #         else:
+        #             depth_map[i,j] = 0
+        depth_map = depth_map.astype(np.uint8)
+        print(depth_map.dtype)
+        colored_image = cv2.applyColorMap(depth_map, cv2.COLORMAP_JET)
+        cv2.imwrite(depth_filepath + "cv_depth_" + img_name[:-4] + "_with_" + prev_name, colored_image)
 
         # Update previous variables
         prev_img = cur_img
