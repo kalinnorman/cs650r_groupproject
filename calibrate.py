@@ -9,6 +9,7 @@ import numpy as np
 import csv
 import cv2 as cv
 import glob
+import os
 np.set_printoptions(suppress=True, edgeitems=30, linewidth=256)
 
 
@@ -18,26 +19,9 @@ def show_img(img, caption):
     axarr.set_axis_off()
     axarr.set_title(caption, y=-.04)
     
-def sRGB_to_grayscale_linear(img):
-    
-    # Normalize to 0.0->1.0 range
-    n_img = np.array(img, dtype=np.float32) / 255.0
-
-    # Gamma correction removal - see https://en.wikipedia.org/wiki/Grayscale
-    lower_mask   = n_img <= 0.04045
-    upper_mask   = n_img >  0.04045
-    lower_update = n_img[:] / 12.92
-    upper_update = np.power( ( (n_img[:] + 0.055) / 1.055), 2.4 )
-    
-    l_rgb = (lower_mask * lower_update) + (upper_mask * upper_update)  
-    
-    # Map to RGB
-    gray = l_rgb[:,:,0] * 0.2126 + l_rgb[:,:,1] * 0.7152 + l_rgb[:,:,2] * 0.0722     
-    return gray
-
-def camera_calibration():
-    img_test = np.asarray(Image.open('./calibration/GOPR0034.jpg'))
-    show_img(img_test, 'TESTING')
+def calibrate_camera(path):
+    cwd = os.getcwd()
+    path = os.path.join(cwd, path)
 
     # prepare object points, like (0,0,0), (1,0,0), (2,0,0) ....,(6,5,0)
     objp = np.zeros((6*8,3), np.float32)
@@ -48,12 +32,21 @@ def camera_calibration():
     imgpoints = [] # 2d points in image plane.
 
     # Make a list of calibration images
-    images = glob.glob('.\\calibration\\*.jpg')
+    path_search = os.path.join(path, '*.jpg')
+    images = glob.glob(path_search)
     print(images)
 
     # Step through the list and search for chessboard corners
+    w = None
+    h = None
     for idx, fname in enumerate(images):
         img = cv.imread(fname)
+        if h is not None and w is not None:
+            assert w == img.shape[1] and h == img.shape[0], 'Images cannot be of inconsistent shape'
+        else:
+            w = img.shape[1]
+            h = img.shape[0]
+            
         gray = cv.cvtColor(img, cv.COLOR_BGR2GRAY)
 
         # Find the chessboard corners
@@ -75,24 +68,11 @@ def camera_calibration():
             # cv.waitKey(500)
         print('Done with ' + str(idx))
 
-    cv.destroyAllWindows()
+    # cv.destroyAllWindows()
+
+    ret, mtx, dist, rvecs, tvecs = cv.calibrateCamera(objpoints, imgpoints, (w,h), None, None)
+
+    return mtx, dist, rvecs, tvecs
     
-    return K
 
-
-
-# OPENCV way
-img = cv.imread('.\\calibration\\GOPR0034.jpg')
-h, w, z = img.shape[:]
-ret, mtx, dist, rvecs, tvecs = cv.calibrateCamera(objpoints, imgpoints, (w,h), None, None)
-
-print('Reference Camera_Intrinsics:\n', mtx)
-print('Reference Camera_Distortion:\n', dist)
-#newcameramtx, roi = cv.getOptimalNewCameraMatrix(mtx, dist, (w,h), 1, (w,h))
-
-dst = cv.undistort(img, mtx, dist, None, mtx)
-dst_small = cv.resize(dst, ( int(dst.shape[1]), int(dst.shape[0])) )
-show_img(dst_small, 'Reference Undistortion')
-cv.imshow('undist', dst_small)
-cv.waitKey()
 
