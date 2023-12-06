@@ -29,7 +29,6 @@ if __name__ == '__main__':
     if l_img.shape[0] == 4032 or l_img.shape[0] == 403:
         l_img = cv2.transpose(l_img)
         r_img = cv2.transpose(r_img)
-
     l_img = resize_img(l_img,args['img_resize_ratio'])
     r_img = resize_img(r_img,args['img_resize_ratio'])
     print("Image Resize Ratio:",args['img_resize_ratio'])
@@ -44,7 +43,7 @@ if __name__ == '__main__':
     print("New Image Shapes:",r_img.shape)
 
     ## Compute Depth Map
-    stereo = cv2.StereoBM_create(numDisparities=0, blockSize=11)#numDisparites=0, [nD=16, bS=21]
+    stereo = cv2.StereoBM_create(numDisparities=0, blockSize=21)#numDisparites=0, [nD=16, bS=21]
     # stereo = cv2.StereoSGBM_create(
     #     minDisparity=-1,
     #     numDisparities=32,
@@ -63,11 +62,14 @@ if __name__ == '__main__':
     cv2.imshow("Left", l_img)
     cv2.namedWindow('Right', cv2.WINDOW_NORMAL)
     cv2.imshow("Right", r_img)
-    
+    cv2.waitKey(0)
+    cv2.destroyAllWindows()
+
+    plt.figure()
     plt.imshow(depth)
     plt.axis('off')
     plt.show()
 
 
     # cv2.waitKey(0)
-    cv2.destroyAllWindows()
+    
