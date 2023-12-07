@@ -34,7 +34,7 @@ def calibrate_camera(path):
     # Make a list of calibration images
     path_search = os.path.join(path, '*.jpg')
     images = glob.glob(path_search)
-    print(images)
+    # print(images)
 
     # Step through the list and search for chessboard corners
     w = None
@@ -66,7 +66,7 @@ def calibrate_camera(path):
             #cv2.imwrite(write_name, img)
             # cv.imshow('img', img)
             # cv.waitKey(500)
-        print('Done with ' + str(idx))
+        # print('Done with ' + str(idx))
 
     # cv.destroyAllWindows()
 
