@@ -21,7 +21,7 @@
 | 11/30 | Coding up disparity and depth calculations. Still debugging rectification in pipeline | 8 |
 | 12/4 | Fix depth calculations and compare with OpenCV | 3 |
 | 12/5 | Fix depth calculations and compare with OpenCV | 1 |
-<!-- | 12/1 | Begin making full pipeline for disparity and depth calculations | (Goal: 3 hrs, Left Over: 36 hrs) |
-| 12/2 | Finalize full depth and point cloud fusion pipeline | (Goal: 6 hrs, Left Over: 30 hrs) | -->
-|| **Total hours worked thus far** | **45.5** |
-|| **Hours Remaining out of 80 hours required** | **34.5** |
+| 12/6 | Group meet up and final steps layout | 1.5 |
+| 12/7 | Writing combined code and continuing depth map debugging | 8am- |
+|| **Total hours worked thus far** | **47** |
+|| **Hours Remaining out of 80 hours required** | **33** |
