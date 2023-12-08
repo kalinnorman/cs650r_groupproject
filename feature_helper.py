@@ -43,7 +43,7 @@ class FeatureHelper():
             # Update prev variables
             prev_img_name = curr_img_name
             prev_img = curr_img    
-        return self.pairwise_matches
+        return
     
     def estimate_pairwise_poses_and_3d_points(self, K):
         # Initialize variables

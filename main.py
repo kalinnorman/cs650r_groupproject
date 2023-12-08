@@ -58,7 +58,7 @@ def main(args):
             value = [(key_point1, key_point2), ...] 
     '''
     print("Performing Feature Matching...",end="\t", flush=True)
-    matches = feature_helper.compute_matches(img_helper.undist_imgs)
+    feature_helper.compute_matches(img_helper.undist_imgs)
     print("Finished!")
 
     '''
@@ -70,7 +70,7 @@ def main(args):
         - Rotation, unit Translation, 3D point cloud
     '''
     print("Performing Initial Pose and 3D Point Estimation...",end="\t", flush=True)
-    Rs, ts, pts_3ds = feature_helper.estimate_initial_poses_and_3d_points(K)
+    Rs, ts, pts_3ds = feature_helper.estimate_pairwise_poses_and_3d_points(K)
     print("Finished!")
 
     '''
