@@ -28,7 +28,7 @@ if __name__ == '__main__':
     obj_pts = [] # 3D points in real world
     img_pts = [] # 2D points in image plane
 
-    img_sz_type = "shrunk_refined_"
+    img_sz_type = "laptop_"
     folder_name = img_sz_type + "cal_images"
     images = natsorted(os.listdir(folder_name)) # read in images
     cv2.namedWindow('Img',cv2.WINDOW_NORMAL)

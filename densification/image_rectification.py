@@ -1,4 +1,5 @@
 import cv2
+import numpy as np
 
 class ImageRectification():
     def __init__(self, cam_mat, dist_coeff):
@@ -27,7 +28,10 @@ class ImageRectification():
         self.new_K, roi = cv2.getOptimalNewCameraMatrix(self.K, self.dist, (w, h), 1, (w, h))
 
         rectify_scale= 1
-        rect_l, rect_r, proj_mat_l, proj_mat_r, Q, roi_l, roi_r = cv2.stereoRectify(self.new_K, self.dist, self.new_K, self.dist, (w, h), R, T, rectify_scale, (0,0))
+        T_zeroed = np.zeros_like(T)
+        T_zeroed[0:2] = T[0:2]
+        # print("T:",T)
+        rect_l, rect_r, proj_mat_l, proj_mat_r, Q, roi_l, roi_r = cv2.stereoRectify(self.new_K, self.dist, self.new_K, self.dist, (w, h), R, T_zeroed, rectify_scale, (0,0))
         # for elem in Q:
         #     print(np.round(elem))
 
