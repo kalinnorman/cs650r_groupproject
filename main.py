@@ -62,41 +62,24 @@ def main(args):
     print("Finished!")
 
     '''
-    Pairwise Pose Estimation
+    Initial Pose and 3D Point (Triangulation) Estimation
 
     Input: 
-        - 3D feature points, ???
+        - Camera Intrinsic Matrix (This assumes a single camera for all images)
     Output:
-        - 3D point cloud, Camera Poses
+        - Rotation, unit Translation, 3D point cloud
     '''
-
-
-    '''
-    Triangulation
-
-    Input: 
-        - 3D feature points, ???
-    Output:
-        - 3D point cloud, Camera Poses
-    '''
-
-
-    '''
-    Convert to Global Frame
-    
-    Input: 
-        - 3D feature points, ???
-    Output:
-        - 3D point cloud, Camera Poses
-    '''
+    print("Performing Initial Pose and 3D Point Estimation...",end="\t", flush=True)
+    Rs, ts, pts_3ds = feature_helper.estimate_initial_poses_and_3d_points(K)
+    print("Finished!")
 
     '''
     Bundle Adjustment
 
     Input: 
-        - 3D feature points, ???
+        - Initial Rotation, Translation, and 3D point estimates, ...?
     Output:
-        - 3D point cloud, Camera Poses
+        - Updated Rotation, Translation, and 3D point estimates
     '''    
 
     pass
