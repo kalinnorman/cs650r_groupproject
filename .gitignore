@@ -9,6 +9,7 @@ __pycache__/
 # Don't Copy over large .ply SfM models
 *.ply
 *.jpg
+*.png
 
 
 # Distribution / packaging
