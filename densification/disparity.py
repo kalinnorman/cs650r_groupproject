@@ -8,7 +8,7 @@ class Disparity():
         self.d_max = d_max
         return
     
-    def compute(self, left_img, right_img):
+    def compute(self, left_img, right_img, left_img_offset=0):
         '''
         Performs Image Rectification on a left and right image pair. 
         Purpose is to put the image planes parallel to each other with parallel epipolar lines. 
@@ -23,14 +23,14 @@ class Disparity():
         assert(len(left_img.shape) == 2) # 2D gray image
         w, h = left_img.shape[1], left_img.shape[0]
         disparity_img = np.zeros((right_img.shape[0],right_img.shape[1]))
-        for l_row in tqdm(range(self.patch_size//2, h - self.patch_size//2, 1), desc='Disparity Calculations'):
+        for l_row in tqdm(range(self.patch_size//2 - left_img_offset, h - self.patch_size//2, 1), desc='Disparity Calculations'):
             for l_col in range(self.patch_size//2, w - self.patch_size//2, 1):
-                pix_disp = self.compute_patch_match(left_img, right_img, l_row, l_col)
+                pix_disp = self.compute_patch_match(left_img, right_img, l_row, l_col, left_img_offset)
                 disparity_img[l_row,l_col] = pix_disp
         cv2.normalize(disparity_img, disparity_img, 0, 255, cv2.NORM_MINMAX)
         return disparity_img
     
-    def compute_patch_match(self, l_img, r_img, row_idx, col_idx):
+    def compute_patch_match(self, l_img, r_img, row_idx, col_idx, left_img_offset):
         # print(f"l_img.shape: {l_img.shape}, r_img.shape: {r_img.shape}, row_idx: {row_idx}, col_idx: {col_idx}")
         if (self.d_max is None) or (int(col_idx - self.d_max) <= 0):
             start_idx = 0
@@ -44,7 +44,7 @@ class Disparity():
         if len(scan_steps) == 1:
             return 0
         ssd = np.zeros((len(scan_steps),))        
-        l_img_patch = l_img[row_idx - self.patch_size//2 : row_idx + np.ceil(self.patch_size/2).astype(int), 
+        l_img_patch = l_img[(row_idx+left_img_offset) - self.patch_size//2 : (row_idx+left_img_offset) + np.ceil(self.patch_size/2).astype(int), 
                             col_idx - self.patch_size//2 : col_idx + np.ceil(self.patch_size/2).astype(int)]
         wL = l_img_patch.reshape((self.patch_size*self.patch_size,))
         cnt = 0

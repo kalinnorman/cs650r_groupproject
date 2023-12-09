@@ -23,5 +23,6 @@
 | 12/5 | Fix depth calculations and compare with OpenCV | 1 |
 | 12/6 | Group meet up and final steps layout | 1.5 |
 | 12/7 | Writing combined code and continuing depth map debugging | 8.75 |
-|| **Total hours worked thus far** | **55.75** |
-|| **Hours Remaining out of 80 hours required** | **24.25** |
+| 12/8 | Group discussions, depth improving | 2.25 |
+|| **Total hours worked thus far** | **58** |
+|| **Hours Remaining out of 80 hours required** | **22** |
