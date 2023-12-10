@@ -2,6 +2,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 import cv2 as cv
 import argparse
+import sys
 
 from calibrate import calibrate_camera
 from image_helper import ImageHelper
@@ -13,12 +14,15 @@ Example python command: python3 main.py --data=calibration/
 
 def main(args):
     ## Class Initializations
-    img_helper = ImageHelper(args['data'])
+    # img_helper = ImageHelper(args['data'])
+    img_helper = ImageHelper('imgs/sfm/')
     feature_helper = FeatureHelper()
     
     ## Load Images
-    img_helper.load_imgs()
-    
+    print("Loading Images...",end="\t", flush=True)
+    img_helper.load_imgs(10)
+    print("Finished!")
+
     '''
     Perform camera calibration and get intrinsic matrix (K) and distortion coefficients)
     
@@ -28,9 +32,15 @@ def main(args):
         K (numpy.array) - Camera Matrix
         dist_params (numpy.array) - distortion coefficients
     '''
-    print("Performing Camera Calibration...",end="\t", flush=True)
-    K, dist_params, r_vecs, t_vecs = calibrate_camera('calibration') 
-    print("Finished!")
+    # print("Performing Camera Calibration...",end="\t", flush=True)
+    # K, dist_params, r_vecs, t_vecs = calibrate_camera('calibration') 
+    # print("Finished!")
+
+    # Temporary values from Chad's stuff
+    K = np.array([[3367.27729,        0.0, 2032.98851], # Units are in mm
+                  [       0.0, 3367.67873, 1507.90056],
+                  [       0.0,        0.0,        1.0]])
+    dist_params = np.array([0.218041803, -1.29382245, -0.00204264766, 0.000601951192, 2.35001621])
 
     '''
     Undistort Images
@@ -58,7 +68,8 @@ def main(args):
             value = [(key_point1, key_point2), ...] 
     '''
     print("Performing Feature Matching...",end="\t", flush=True)
-    feature_helper.compute_matches(img_helper.undist_imgs)
+    # feature_helper.compute_matches(img_helper.undist_imgs)
+    feature_helper.compute_matches_alt(img_helper.undist_imgs)
     print("Finished!")
 
     '''

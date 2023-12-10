@@ -31,11 +31,13 @@ class ImageHelper():
             cv.destroyAllWindows()
         return #self.undist_imgs
     
-    def load_imgs(self):
+    def load_imgs(self, img_limit=None):
         image_names = natsorted(os.listdir(self.img_folderpath))
         for img_name in image_names:
             img = cv.imread(self.img_folderpath + img_name)
             if self.img_h is None:
                 self.img_h, self.img_w = img.shape[0], img.shape[1]
             self.orig_imgs[img_name] = img
+            if img_limit is not None and len(self.orig_imgs) >= img_limit:
+                break
         return
