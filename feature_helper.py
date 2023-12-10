@@ -192,10 +192,8 @@ class FeatureHelper():
                     self.global_matches['3d'][des_idxs_masked[i]] = pts_3d[:,i]
                 else:
                     self.global_matches['3d'][des_idxs_masked[i]] = (self.global_matches['3d'][des_idxs_masked[i]] + pts_3d[:,i]) / 2
-        # Format everything nicely for bundle adjustment, which is what will be the next step
-        # TODO
-
-        return
+        # Return the rotation and translation lists, and the global_matches dictionary
+        return Rs, ts, self.global_matches
     
 
 
