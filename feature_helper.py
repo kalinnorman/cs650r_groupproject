@@ -17,6 +17,12 @@ class FeatureHelper():
         return
     
     def compute_matches(self, imgs):
+        '''
+        Computes matches between pairs of images, and stores the matches in a dictionary.
+        The dictionary is structured as follows:
+            - key: tuple of image names
+            - value: list of tuples of matched keypoints
+        '''
         prev_img_name = None
         prev_img = None
         curr_img_name = None
@@ -51,6 +57,25 @@ class FeatureHelper():
         return
     
     def compute_matches_alt(self, imgs):
+        '''
+        Attempts to create a global list of descriptors, then tracking the indices of the descriptors and keypoints that are found in each image.
+        This means that each image can have matches with descriptors from any/all of the previous images, rather than just the one image before it.
+        The results are stored in a dictionary:
+            - First item
+                - key: 'des'
+                - value: list of descriptors (built up over time to include all descriptors from all images with (ideally) no duplicates)
+            - Second item
+                - key: '3d'
+                - value: list of 3d points (set to None for now, but will be updated later)
+            - Third item and beyond
+                - key: image name
+                - value: list of three items:
+                    - list of indices of all descriptors in the global list of descriptors that are found in the current image
+                    - list of two lists:
+                        - ordered list of indices of the descriptors in the global list of descriptors that relate to matches found in the current image
+                        - ordered list of indices of the keypoints in the current image that correspond with the matches found in the current image
+                    - list of all keypoints in the current image
+        '''
         for img_name, img in imgs.items():
             # Detect SIFT features
             kp, des = self.sift.detectAndCompute(img, None)
@@ -158,50 +183,10 @@ class FeatureHelper():
                     self.global_matches['3d'][des_idxs_masked[i]] = pts_3d[:,i]
                 else:
                     self.global_matches['3d'][des_idxs_masked[i]] = (self.global_matches['3d'][des_idxs_masked[i]] + pts_3d[:,i]) / 2
-        exit()
+        # Format everything nicely for bundle adjustment, which is what will be the next step
+        # TODO
 
-        # for key, value in self.pairwise_matches.items():
-        #     ## Pairwise pose estimation
-            
-        #     # Pull out points from matches
-        #     prv_pts = np.array([pt[0] for pt in value])
-        #     cur_pts = np.array([pt[1] for pt in value])
-        #     # Estimate the Essential matrix and recover pose from the Essential matrix
-        #     E, mask = cv.findEssentialMat(prv_pts, cur_pts, cameraMatrix=K, method=cv.RANSAC, prob=0.999, threshold=1.0)
-        #     _, R, t, mask = cv.recoverPose(E, prv_pts, cur_pts, cameraMatrix=K, mask=mask)
-        #     # Apply mask and get matches that were used to estimate pose (inliers)
-        #     self.pairwise_matches_masked[key] = [value[i] for i in range(len(value)) if mask[i] == 1]
-        #     prv_pts_masked = np.array([pt[0] for pt in self.pairwise_matches_masked[key]])
-        #     cur_pts_masked = np.array([pt[1] for pt in self.pairwise_matches_masked[key]])
-
-        #     # Rotation and translation are from previous camera to current camera, 
-        #     # but we want to know the rotation and translation from the very first camera to the current camera
-        #     if len(Rs) == 0:
-        #         R_first_cam_to_current_cam = R
-        #         t_first_cam_to_current_cam = t
-        #     else:
-        #         R_first_cam_to_current_came = R @ Rs[-1]
-        #         t_first_cam_to_current_cam = R @ ts[-1] + t
-        #     # Append pose to lists
-        #     Rs.append(R_first_cam_to_current_cam)
-        #     ts.append(t_first_cam_to_current_cam)
-
-        #     ## Triangulate points
-
-        #     # Set up projection matrices (setting the first camera as the origin, and using the pose estimates for all others)
-        #     if len(Rs) == 0:
-        #         P1 = K @ np.eye(3, 4)
-        #     else:
-        #         P1 = K @ np.hstack((Rs[-2], ts[-2]))
-        #     P2 = K @ np.hstack((Rs[-1], ts[-1]))
-        #     # Perform triangulation and convert to inhomoegeneous coordinates
-        #     pts_4d = cv.triangulatePoints(P1, P2, prv_pts_masked.T, cur_pts_masked.T)
-        #     pts_3d = pts_4d[:3,:] / pts_4d[3,:]
-        #     # Find any 3d points that match with existing 3d points and average the estimated locations
-        #     # TODO
-                
-
-        return Rs, ts
+        return
     
 
 
