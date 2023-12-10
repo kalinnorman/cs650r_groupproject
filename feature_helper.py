@@ -116,6 +116,15 @@ class FeatureHelper():
         self.global_matches['3d'] = [None for i in range(len(self.global_matches['des']))]
     
     def estimate_pairwise_poses_and_3d_points(self, K):
+        '''
+        Estimates the pairwise poses and 3d points from the matches.
+        This is done via estimating the essential matrix, recovering the pose from the essential matrix, and triangulating the points.
+        From this we get:
+            - Rs: list of rotation matrices, where each rotation matrix is from the global frame to the current camera frame
+            - ts: list of translation vectors, where each translation vector is from the global frame to the current camera frame
+            - pts_3ds: list of 3d points that is filled into the global_matches dictionary and any 3d points with multiple estimates are averaged
+        The rotation list, translation list, and global_matches dictionary are returned.
+        '''
         # Initialize variables
         prev_key = None
         Rs = []
