@@ -69,3 +69,53 @@ class Disparity():
         disp = col_idx - scan_steps[wta_idx]
         assert(disp >= 0) # Must be non-negative
         return disp
+    
+    def compute_disparity_cgpt(self, imgL, imgR):#, block_size=5, disparity_range=16):
+        """
+        Compute disparity map using basic block matching algorithm.
+
+        :param imgL: Left image (numpy array) grayscale.
+        :param imgR: Right image (numpy array) grayscale.
+        :return: Disparity map.
+        """
+
+        # Image dimensions
+        h, w = imgL.shape
+
+        # Padding
+        pad = self.patch_size // 2
+
+        # Initialize disparity map
+        disparity_map = np.zeros_like(imgL)
+
+        # Iterate over each pixel in the left image
+        for y in range(pad, h - pad):
+            for x in range(pad, w - pad):
+                # Define the patch in the left image
+                block_left = imgL[y - pad:y + pad + 1, x - pad:x + pad + 1]
+
+                # Search range in the right image
+                x_min = max(pad, x - self.d_max)
+                x_max = min(w - pad, x + self.d_max)
+
+                # Initialize the best match score and position
+                best_score = float('inf')
+                best_x = 0
+
+                # Iterate over each position in the search range
+                for xR in range(x_min, x_max):
+                    # Define the patch in the right image
+                    block_right = imgR[y - pad:y + pad + 1, xR - pad:xR + pad + 1]
+
+                    # Compute the sum of squared differences (SSD)
+                    ssd = np.sum((block_left - block_right) ** 2)
+
+                    # Update best match if a better score is found
+                    if ssd < best_score:
+                        best_score = ssd
+                        best_x = xR
+
+                # Compute disparity
+                disparity_map[y, x] = abs(x - best_x)
+
+        return disparity_map

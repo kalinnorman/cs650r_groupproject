@@ -114,16 +114,19 @@ if __name__ == '__main__':
         R_prev2cur = cur_R @ prev_R.T
         T_prev2cur = cur_T - prev_T
         prev_img_rect, cur_img_rect = img_rectifier.rectify(prev_img, cur_img, R_prev2cur, T_prev2cur)
+        img_rectifier.draw_epipolar_lines(cur_img, prev_img)
+        img_rectifier.draw_epipolar_lines(cur_img_rect, prev_img_rect)
+        
         l_img_offset = 0#-30
         # # Display Rectified Images
         # cv2.namedWindow('Current Image', cv2.WINDOW_NORMAL)
-        # cv2.imshow("Current Image", cur_img[100:125,:,:])
+        # cv2.imshow("Current Image", cur_img)#[100:125,:,:])
         # cv2.namedWindow('Previous Image', cv2.WINDOW_NORMAL)
-        # cv2.imshow("Previous Image", prev_img[100:125,:,:])
+        # cv2.imshow("Previous Image", prev_img)#[100:125,:,:])
         # cv2.namedWindow('Current Rectified Image', cv2.WINDOW_NORMAL)
-        # cv2.imshow("Current Rectified Image", cur_img_rect[100:125,:,:])
+        # cv2.imshow("Current Rectified Image", cur_img_rect)#[100:125,:,:])
         # cv2.namedWindow('Previous Rectified Image', cv2.WINDOW_NORMAL)
-        # cv2.imshow("Previous Rectified Image", prev_img_rect[100+l_img_offset:125+l_img_offset,:,:])
+        # cv2.imshow("Previous Rectified Image", prev_img_rect)#[100+l_img_offset:125+l_img_offset,:,:])
         # cv2.waitKey(0)
         # cv2.destroyAllWindows()
 
@@ -132,7 +135,8 @@ if __name__ == '__main__':
         print("Computing disparity for image",img_name)
         l_img = cv2.cvtColor(prev_img_rect,cv2.COLOR_BGR2GRAY)
         r_img = cv2.cvtColor(cur_img_rect,cv2.COLOR_BGR2GRAY)
-        disparity_img = disp.compute(r_img, l_img, l_img_offset) # ASSUMES IMAGES ARE RECTILINEAR!
+        # disparity_img = disp.compute(r_img, l_img, l_img_offset) # ASSUMES IMAGES ARE RECTILINEAR!
+        disparity_img = disp.compute_disparity_cgpt(l_img, r_img)
         # disparity_img = stereo.compute(r_img,l_img)
 
         # Compute & Save Depth Image

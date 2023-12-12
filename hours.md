@@ -24,5 +24,6 @@
 | 12/6 | Group meet up and final steps layout | 1.5 |
 | 12/7 | Writing combined code and continuing depth map debugging | 8.75 |
 | 12/8 | Group discussions, depth improving | 2.25 |
+| 12/12 | Final fix of depth | 1.5, 11:50am- |
 || **Total hours worked thus far** | **58** |
 || **Hours Remaining out of 80 hours required** | **22** |
