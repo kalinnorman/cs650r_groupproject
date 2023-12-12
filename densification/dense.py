@@ -65,7 +65,6 @@ if __name__ == '__main__':
     #     P2=32*3*5**2,
     # )
 
-
     prev_img = None
     prev_name = None
     prev_R = None
