@@ -97,6 +97,22 @@ class FeatureHelper():
             # Determine the indices of the matches
             global_idxs = [m.trainIdx for m in good] # Indices of the global descriptors that match with the current image
             image_idxs = [m.queryIdx for m in good] # Indices of the current image descriptors and keypoints that match with the global descriptors
+            
+            # If there are multiple matches to the same global descriptor, remove all of them
+            remove_dupes = True
+            if remove_dupes:
+                for i in range(len(global_idxs)):
+                    # Find if the index is repeated
+                    if global_idxs.count(global_idxs[i]) > 1:
+                        # Identify all indices with that value
+                        idxs = [j for j in range(len(global_idxs)) if global_idxs[j] == global_idxs[i]]
+                        # Set all of those indices to -1
+                        for j in idxs:
+                            global_idxs[j] = -1
+                            image_idxs[j] = -1
+                global_idxs = [i for i in global_idxs if i != -1]
+                image_idxs = [i for i in image_idxs if i != -1]
+            
             # Identify the descriptors not matched in the current image
             unmatched_des_idxs = [i for i in range(len(des)) if i not in image_idxs]
             # Get a subset of the unmatched descriptors and add it to the end of the full list of descriptors
@@ -123,13 +139,14 @@ class FeatureHelper():
             - Rs: list of rotation matrices, where each rotation matrix is from the global frame to the current camera frame
             - ts: list of translation vectors, where each translation vector is from the global frame to the current camera frame
             - pts_3ds: list of 3d points that is filled into the global_matches dictionary and any 3d points with multiple estimates are averaged
-        The rotation list, translation list, and global_matches dictionary are returned.
+        The rotation list, translation list, 3d points, and the list of lists of 3d point indices and keypoints per image are returned.
         '''
         # Initialize variables
         prev_key = None
         Rs = []
         ts = []
         pts_3d = []
+        img_desidx_kpval_list = []
         # Loop through matches
         for key, value in self.global_matches.items():
             # Skip the first key (descriptors)
@@ -150,20 +167,21 @@ class FeatureHelper():
                 if global_des_idxs_for_cur_img_matches[i] in prev_img_des_idxs:
                     matching_idxs_cur_to_prev.append(global_des_idxs_for_cur_img_matches[i]) # Index of descriptor in global list that both images share
             # From the matches, find the correct keypoint indices, then pull out those keypoints
-            temp = [self.global_matches[prev_key][1][0].index(i) for i in matching_idxs_cur_to_prev] # Index of where the descriptor index is in the list
-            prev_img_kp_idxs = [self.global_matches[prev_key][1][1][i] for i in temp] # Index of the keypoint that corresponds to the same descriptor
-            prev_img_kp = [self.global_matches[prev_key][2][i].pt for i in prev_img_kp_idxs] # Keypoint coordinates
-            prev_img_kp = np.array(prev_img_kp)
-            temp = [self.global_matches[key][1][0].index(i) for i in matching_idxs_cur_to_prev]
-            cur_img_kp_idxs = [self.global_matches[key][1][1][i] for i in temp]
-            cur_img_kp = [self.global_matches[key][2][i].pt for i in cur_img_kp_idxs]
-            cur_img_kp = np.array(cur_img_kp)
+            prev_img_kp_idxs = [self.global_matches[prev_key][0].index(i) for i in matching_idxs_cur_to_prev] # Index in the descriptor list for the previous image, which is also the keypoint index
+            prev_img_kp = [self.global_matches[prev_key][2][i] for i in prev_img_kp_idxs] # Keypoint coordinates
+            prev_img_kp_pts = [kp.pt for kp in prev_img_kp]
+            prev_img_kp_pts = np.array(prev_img_kp_pts)
+            temp = [self.global_matches[key][1][0].index(i) for i in matching_idxs_cur_to_prev] # Index in the descriptor list for the current image, which will have a corresponding keypoint index
+            cur_img_kp_idxs = [self.global_matches[key][1][1][i] for i in temp] # Corresponding keypoint indices
+            cur_img_kp = [self.global_matches[key][2][i] for i in cur_img_kp_idxs] # Keypoint coordinates
+            cur_img_kp_pts = [kp.pt for kp in cur_img_kp]
+            cur_img_kp_pts = np.array(cur_img_kp_pts)
             # Estimate the essential matrix and recover pose from the essential matrix
-            E, mask = cv.findEssentialMat(prev_img_kp, cur_img_kp, cameraMatrix=K, method=cv.RANSAC, prob=0.999, threshold=1.0)
-            _, R, t, mask = cv.recoverPose(E, prev_img_kp, cur_img_kp, cameraMatrix=K, mask=mask)
+            E, mask = cv.findEssentialMat(prev_img_kp_pts, cur_img_kp_pts, cameraMatrix=K, method=cv.RANSAC, prob=0.999, threshold=1.0)
+            _, R, t, mask = cv.recoverPose(E, prev_img_kp_pts, cur_img_kp_pts, cameraMatrix=K, mask=mask)
             # Get masked points
-            prv_pts_masked = prev_img_kp[mask.ravel()==1]
-            cur_pts_masked = cur_img_kp[mask.ravel()==1]
+            prv_pts_masked = prev_img_kp_pts[mask.ravel()==1]
+            cur_pts_masked = cur_img_kp_pts[mask.ravel()==1]
             # Rotation and translation are from previous camera to current camera, but we want rotation and translation from first camera to the current camera
             if len(Rs) == 0:
                 Rs.append(np.eye(3)) # Add in identity matrix for first camera
@@ -184,16 +202,29 @@ class FeatureHelper():
             pts_3d = pts_4d[:3,:] / pts_4d[3,:]
             # Now we need to identify the descriptors that match with the 3d points we got from triangulation (taking into account the mask)
             mask_bool_list = mask.ravel() == 1
-            kp_idxs_masked = [cur_img_kp_idxs[i] for i in range(len(mask_bool_list)) if mask_bool_list[i] == True]
-            des_idxs_masked = [self.global_matches[key][1][0][self.global_matches[key][1][1].index(i)] for i in kp_idxs_masked]
+            cur_img_kp_masked = [cur_img_kp[i] for i in range(len(mask_bool_list)) if mask_bool_list[i] == True] 
+            kp_idxs_masked = []
+            des_idxs_masked = []
+            for mkp in cur_img_kp_masked:
+                kpidx = self.global_matches[key][2].index(mkp)
+                kp_idxs_masked.append(kpidx)
+                des_idxs_masked.append(self.global_matches[key][1][0][self.global_matches[key][1][1].index(kpidx)])
+            print(len(des_idxs_masked) == len(pts_3d.T))
             # Update the 3d points, and if any existing 3d points match with the new 3d points, average the estimated locations
             for i in range(len(des_idxs_masked)):
                 if self.global_matches['3d'][des_idxs_masked[i]] is None:
                     self.global_matches['3d'][des_idxs_masked[i]] = pts_3d[:,i]
                 else:
                     self.global_matches['3d'][des_idxs_masked[i]] = (self.global_matches['3d'][des_idxs_masked[i]] + pts_3d[:,i]) / 2
-        # Return the rotation and translation lists, and the global_matches dictionary
-        return Rs, ts, self.global_matches
+            # Add info for the latest image pair to the list
+            cur_img_list = []
+            for i in range(len(des_idxs_masked)):
+                cur_img_list.append([des_idxs_masked[i], cur_pts_masked[i]])
+            img_desidx_kpval_list.append(cur_img_list)
+            # Update the previous key
+            prev_key = key
+        # Return the rotation and translation lists, 3d points, and the list of lists of descriptors and keypoints
+        return Rs, ts, self.global_matches['3d'], img_desidx_kpval_list
     
 
 

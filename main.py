@@ -7,6 +7,7 @@ import sys
 from calibrate import calibrate_camera
 from image_helper import ImageHelper
 from feature_helper import FeatureHelper
+from bundle_adjustment import bundle_adjustment
 
 '''
 Example python command: python3 main.py --data=calibration/
@@ -20,7 +21,7 @@ def main(args):
     
     ## Load Images
     print("Loading Images...",end="\t", flush=True)
-    img_helper.load_imgs(10)
+    img_helper.load_imgs(4)
     print("Finished!")
 
     '''
@@ -81,17 +82,20 @@ def main(args):
         - Rotation, unit Translation, 3D point cloud
     '''
     print("Performing Initial Pose and 3D Point Estimation...",end="\t", flush=True)
-    Rs, ts, pts_3ds = feature_helper.estimate_pairwise_poses_and_3d_points(K)
+    Rs, ts, pts_3d, helper_list = feature_helper.estimate_pairwise_poses_and_3d_points(K)
     print("Finished!")
 
     '''
     Bundle Adjustment
 
     Input: 
-        - Initial Rotation, Translation, and 3D point estimates, ...?
+        - Camera Intrinsic Matrix, Initial Rotation, Initial Translation, 3D Point List, and Feature Matching List
     Output:
         - Updated Rotation, Translation, and 3D point estimates
     '''    
+    print("Performing Bundle Adjustment...",end="\t", flush=True)
+    Rs, ts, pts_3d = bundle_adjustment(K, Rs, ts, pts_3d, helper_list)
+    print("Finished!")
 
     pass
 
