@@ -209,7 +209,6 @@ class FeatureHelper():
                 kpidx = self.global_matches[key][2].index(mkp)
                 kp_idxs_masked.append(kpidx)
                 des_idxs_masked.append(self.global_matches[key][1][0][self.global_matches[key][1][1].index(kpidx)])
-            print(len(des_idxs_masked) == len(pts_3d.T))
             # Update the 3d points, and if any existing 3d points match with the new 3d points, average the estimated locations
             for i in range(len(des_idxs_masked)):
                 if self.global_matches['3d'][des_idxs_masked[i]] is None:
@@ -217,6 +216,11 @@ class FeatureHelper():
                 else:
                     self.global_matches['3d'][des_idxs_masked[i]] = (self.global_matches['3d'][des_idxs_masked[i]] + pts_3d[:,i]) / 2
             # Add info for the latest image pair to the list
+            if len(img_desidx_kpval_list) == 0:
+                prev_img_list = []
+                for i in range(len(des_idxs_masked)):
+                    prev_img_list.append([des_idxs_masked[i], prv_pts_masked[i]])
+                img_desidx_kpval_list.append(prev_img_list)
             cur_img_list = []
             for i in range(len(des_idxs_masked)):
                 cur_img_list.append([des_idxs_masked[i], cur_pts_masked[i]])
