@@ -4,6 +4,7 @@ import json
 import pickle as pkl
 import cv2
 import numpy as np
+import matplotlib.pyplot as plt
 
 from image_rectification import ImageRectification
 from disparity import Disparity
@@ -89,8 +90,7 @@ if __name__ == '__main__':
         cur_img = resize_img(cv2.imread(imgs_filepath + img_name), img_ratio)
         cur_R, _ = cv2.Rodrigues(np.array(img_data["rotation"]))
         cur_T = np.array(img_data["translation"])
-
-        img_rectifier.draw_epipolar_lines(cur_img, prev_img)
+        # img_rectifier.draw_epipolar_lines(cur_img, prev_img)
 
         # Rectify Images
         print("Performing image rectification for image",img_name)
@@ -114,7 +114,7 @@ if __name__ == '__main__':
         R_prev2cur = cur_R @ prev_R.T
         T_prev2cur = cur_T - prev_T
         prev_img_rect, cur_img_rect = img_rectifier.rectify(prev_img, cur_img, R_prev2cur, T_prev2cur)
-        img_rectifier.draw_epipolar_lines(cur_img_rect, prev_img_rect)
+        # img_rectifier.draw_epipolar_lines(cur_img_rect, prev_img_rect)
         
         l_img_offset = 0#-30
         # # Display Rectified Images
@@ -132,11 +132,11 @@ if __name__ == '__main__':
 
         # Compute Image Disparity
         print("Computing disparity for image",img_name)
-        l_img = cv2.cvtColor(prev_img_rect,cv2.COLOR_BGR2GRAY)
-        r_img = cv2.cvtColor(cur_img_rect,cv2.COLOR_BGR2GRAY)
-        # disparity_img = disp.compute(r_img, l_img, l_img_offset) # ASSUMES IMAGES ARE RECTILINEAR!
+        r_img = cv2.cvtColor(prev_img,cv2.COLOR_BGR2GRAY)
+        l_img = cv2.cvtColor(cur_img,cv2.COLOR_BGR2GRAY)
+        disparity_img = disp.compute(l_img, r_img, l_img_offset) # ASSUMES IMAGES ARE RECTILINEAR!
         # disparity_img = disp.compute_disparity_cgpt(l_img, r_img)
-        disparity_img = stereo.compute(r_img,l_img)
+        # disparity_img = stereo.compute(l_img,r_img)
 
         # Compute & Save Depth Image
         depth_map = disparity_img
@@ -152,9 +152,16 @@ if __name__ == '__main__':
         #             depth_map[i,j] = 0
         depth_map = cv2.normalize(depth_map, None, 0, 255, cv2.NORM_MINMAX)
         depth_map = depth_map.astype(np.uint8)
-        # print(depth_map[depth_map.shape[0]//2:depth_map.shape[0]//2+1,:])
         colored_image = cv2.applyColorMap(depth_map, cv2.COLORMAP_JET)
-        cv2.imwrite(depth_filepath + "cv_depth_" + img_name[:-4] + "_with_" + prev_name, colored_image)
+        
+        rgb_depth = cv2.cvtColor(colored_image, cv2.COLOR_BGR2RGB)
+        fig,ax=plt.subplots()
+        cax=ax.imshow(rgb_depth,cmap='jet')
+        fig.colorbar(cax)
+        plt.savefig(depth_filepath + "cv_depth_" + img_name[:-4] + "_with_" + prev_name, bbox_inches='tight')
+        plt.close(fig)
+
+        # cv2.imwrite(depth_filepath + "cv_depth_" + img_name[:-4] + "_with_" + prev_name, colored_image)
 
         # Update previous variables
         prev_img = cur_img

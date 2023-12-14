@@ -26,6 +26,6 @@
 | 12/8 | Group discussions, depth improving | 2.25 |
 | 12/12 | Looking into image rectification | 4 |
 | 12/13 | Looking into image rectification | 1.5 |
-| 12/14 | Looking into image rectification | 8am- |
+| 12/14 | Looking into image rectification | 4, 12pm- |
 || **Total hours worked thus far** | **63.5** |
 || **Hours Remaining out of 80 hours required** | **16.5** |
