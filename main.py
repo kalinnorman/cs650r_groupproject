@@ -16,14 +16,14 @@ Example python command: python3 main.py --data=calibration/
 def main(args):
     ## Class Initializations
     # img_helper = ImageHelper(args['data'])
-    img_helper = ImageHelper('imgs/sfm/')
-    feature_helper = FeatureHelper()
-    bundle_adjustment = BundleAdjustment()
+    # img_helper = ImageHelper('imgs/sfm/')
+    # feature_helper = FeatureHelper()
+    # bundle_adjustment = BundleAdjustment()
     
-    ## Load Images
-    print("Loading Images...",end="\t", flush=True)
-    img_helper.load_imgs(4)
-    print("Finished!")
+    # ## Load Images
+    # print("Loading Images...",end="\t", flush=True)
+    # img_helper.load_imgs(4)
+    # print("Finished!")
 
     '''
     Perform camera calibration and get intrinsic matrix (K) and distortion coefficients)
@@ -34,8 +34,8 @@ def main(args):
         K (numpy.array) - Camera Matrix
         dist_params (numpy.array) - distortion coefficients
     '''
-    # print("Performing Camera Calibration...",end="\t", flush=True)
-    # K, dist_params, r_vecs, t_vecs = calibrate_camera('calibration') 
+    print("Performing Camera Calibration...",end="\t", flush=True)
+    K, dist_params, r_vecs, t_vecs = calibrate_camera('calibration') 
     # print("Finished!")
 
     # Temporary values from Chad's stuff
