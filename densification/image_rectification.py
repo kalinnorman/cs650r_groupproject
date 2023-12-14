@@ -78,10 +78,10 @@ class ImageRectification():
         pts_r = np.array([kp_r[m.trainIdx].pt for m in good])
         pts_l = np.int32(pts_l)
         pts_r = np.int32(pts_r)
-        F, mask = cv2.findFundamentalMat(pts_l, pts_r, cv2.FM_RANSAC, confidence=0.999)
+        F, mask = cv2.findFundamentalMat(pts_l, pts_r, cv2.FM_RANSAC, confidence=0.9999)
         # Clean up outliers
-        pts_l = pts_l[mask.ravel() == 1]
-        pts_r = pts_r[mask.ravel() == 1]
+        # pts_l = pts_l[mask.ravel() == 1]
+        # pts_r = pts_r[mask.ravel() == 1]
 
         ## OpenCV Compute Epipolar Lines
         # Find epilines corresponding to points in right image (second image) and
@@ -95,7 +95,7 @@ class ImageRectification():
         lines2 = lines2.reshape(-1,3)
         img3,img4 = self.drawlines(r_img,l_img,lines2,pts_r,pts_l)
         cv2.imshow("Left Image with Epipolar Lines",img5)
-        cv2.imshow("Right Image with Epipolar Lines",img3)
+        cv2.imshow("Right Image with Epipolar Lines",img6)
 
         # ## Draw epipolar lines on the left image
         # # Initialize a dictionary to store line colors

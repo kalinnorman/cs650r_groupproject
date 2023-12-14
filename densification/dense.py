@@ -46,7 +46,7 @@ if __name__ == '__main__':
 
     ## Depth Pipeline Begin (left_img=cur_img)
     imgs_filepath = os.path.dirname(args['sfm_recon'])
-    imgs_filepath += "/images/"#"/shrunk_images/"
+    imgs_filepath += "/images/"#"/rect_imgs/"#"/shrunk_images/"
     depth_filepath = os.path.dirname(args['sfm_recon'])
     depth_filepath += "/depth_images/"
     os.makedirs(depth_filepath, exist_ok=True)
@@ -72,6 +72,7 @@ if __name__ == '__main__':
     img_ratio = args["img_resize_ratio"]
     img_cnt = 0
     for img_name, img_data in reconstruction_data["shots"].items():
+        print("Image Name:",img_name)
         if img_cnt >= args['num_imgs'] and args['num_imgs'] != -1:
             break
 
@@ -89,7 +90,7 @@ if __name__ == '__main__':
         cur_R, _ = cv2.Rodrigues(np.array(img_data["rotation"]))
         cur_T = np.array(img_data["translation"])
 
-
+        img_rectifier.draw_epipolar_lines(cur_img, prev_img)
 
         # Rectify Images
         print("Performing image rectification for image",img_name)
@@ -113,7 +114,6 @@ if __name__ == '__main__':
         R_prev2cur = cur_R @ prev_R.T
         T_prev2cur = cur_T - prev_T
         prev_img_rect, cur_img_rect = img_rectifier.rectify(prev_img, cur_img, R_prev2cur, T_prev2cur)
-        img_rectifier.draw_epipolar_lines(cur_img, prev_img)
         img_rectifier.draw_epipolar_lines(cur_img_rect, prev_img_rect)
         
         l_img_offset = 0#-30
@@ -135,8 +135,8 @@ if __name__ == '__main__':
         l_img = cv2.cvtColor(prev_img_rect,cv2.COLOR_BGR2GRAY)
         r_img = cv2.cvtColor(cur_img_rect,cv2.COLOR_BGR2GRAY)
         # disparity_img = disp.compute(r_img, l_img, l_img_offset) # ASSUMES IMAGES ARE RECTILINEAR!
-        disparity_img = disp.compute_disparity_cgpt(l_img, r_img)
-        # disparity_img = stereo.compute(r_img,l_img)
+        # disparity_img = disp.compute_disparity_cgpt(l_img, r_img)
+        disparity_img = stereo.compute(r_img,l_img)
 
         # Compute & Save Depth Image
         depth_map = disparity_img
