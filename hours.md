@@ -24,6 +24,7 @@
 | 12/6 | Group meet up and final steps layout | 1.5 |
 | 12/7 | Writing combined code and continuing depth map debugging | 8.75 |
 | 12/8 | Group discussions, depth improving | 2.25 |
-| 12/12 | Looking into image rectification | 4 |
-|| **Total hours worked thus far** | **62** |
-|| **Hours Remaining out of 80 hours required** | **18** |
+| 12/12 | Looking into image rectification | 3.5 |
+| 12/13 | Looking into image rectification | 1.5, |
+|| **Total hours worked thus far** | **58** |
+|| **Hours Remaining out of 80 hours required** | **22** |
