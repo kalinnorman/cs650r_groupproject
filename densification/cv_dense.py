@@ -50,7 +50,7 @@ if __name__ == '__main__':
     print("Image Shape:",r_img.shape)
 
     ## Compute Depth Map
-    stereo = cv2.StereoBM_create(numDisparities=16*2, blockSize=29)
+    stereo = cv2.StereoBM_create(numDisparities=16*3, blockSize=21)
     # stereo = cv2.StereoBM_create(numDisparities=16*7, blockSize=13)#numDisparites=0, [nD=16, bS=21]
     disparity = stereo.compute(l_img,r_img)
     # disparity = cv2.normalize(disparity, None, 0, 255, cv2.NORM_MINMAX)

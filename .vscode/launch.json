@@ -19,11 +19,17 @@
             // ]
 
             // Rectify Images
+            // "args": [
+            //     "--sfm_recon=/home/student/cs650r_groupproject/data/simple_objects/peanut_butter_lots_of_imgs/reconstruction_pb_lots_imgs.json",
+            //     "--cam_cal=camera_calibration/calibration.pkl",
+            //     "--left_img_path=/home/student/cs650r_groupproject/data/simple_objects/peanut_butter_lots_of_imgs/images/IMG_8779.jpg",
+            //     "--right_img_path=/home/student/cs650r_groupproject/data/simple_objects/peanut_butter_lots_of_imgs/images/IMG_8778.jpg"
+            // ]
+
+            // Disparity Simulation Tests
             "args": [
-                "--sfm_recon=/home/student/cs650r_groupproject/data/simple_objects/peanut_butter_lots_of_imgs/reconstruction_pb_lots_imgs.json",
-                "--cam_cal=camera_calibration/calibration.pkl",
-                "--left_img_path=/home/student/cs650r_groupproject/data/simple_objects/peanut_butter_lots_of_imgs/images/IMG_8779.jpg",
-                "--right_img_path=/home/student/cs650r_groupproject/data/simple_objects/peanut_butter_lots_of_imgs/images/IMG_8778.jpg"
+                "--patch_size=3",
+                "--d_max=2"
             ]
         }
     ]

@@ -83,65 +83,65 @@ class ImageRectification():
         # pts_l = pts_l[mask.ravel() == 1]
         # pts_r = pts_r[mask.ravel() == 1]
 
-        ## OpenCV Compute Epipolar Lines
-        # Find epilines corresponding to points in right image (second image) and
-        # drawing its lines on left image
-        lines1 = cv2.computeCorrespondEpilines(pts_r.reshape(-1,1,2), 2, F)
-        lines1 = lines1.reshape(-1,3)
-        img5,img6 = self.drawlines(l_img,r_img,lines1,pts_l,pts_r)
-        # Find epilines corresponding to points in left image (first image) and
-        # drawing its lines on right image
-        lines2 = cv2.computeCorrespondEpilines(pts_l.reshape(-1,1,2), 1, F)
-        lines2 = lines2.reshape(-1,3)
-        img3,img4 = self.drawlines(r_img,l_img,lines2,pts_r,pts_l)
-        cv2.imshow("Left Image with Epipolar Lines",img5)
-        cv2.imshow("Right Image with Epipolar Lines",img6)
-        # cv2.imshow("Left Image with Epipolar Lines",img1)#img5)
-        # cv2.imshow("Right Image with Epipolar Lines",img2)#img3)
-        # cv2.imwrite("IMG_8990.jpg",img1)
-        # cv2.imwrite("IMG_8989.jpg",img2)
+        # ## OpenCV Compute Epipolar Lines
+        # # Find epilines corresponding to points in right image (second image) and
+        # # drawing its lines on left image
+        # lines1 = cv2.computeCorrespondEpilines(pts_r.reshape(-1,1,2), 2, F)
+        # lines1 = lines1.reshape(-1,3)
+        # img5,img6 = self.drawlines(l_img,r_img,lines1,pts_l,pts_r)
+        # # Find epilines corresponding to points in left image (first image) and
+        # # drawing its lines on right image
+        # lines2 = cv2.computeCorrespondEpilines(pts_l.reshape(-1,1,2), 1, F)
+        # lines2 = lines2.reshape(-1,3)
+        # img3,img4 = self.drawlines(r_img,l_img,lines2,pts_r,pts_l)
+        # cv2.imshow("Left Image with Epipolar Lines",img5)
+        # cv2.imshow("Right Image with Epipolar Lines",img6)
+        # # cv2.imshow("Left Image with Epipolar Lines",img1)#img5)
+        # # cv2.imshow("Right Image with Epipolar Lines",img2)#img3)
+        # # cv2.imwrite("IMG_8990.jpg",img1)
+        # # cv2.imwrite("IMG_8989.jpg",img2)
 
-        # ## Draw epipolar lines on the left image
-        # # Initialize a dictionary to store line colors
-        # line_colors = {}
+        ## Draw epipolar lines on the left image
+        # Initialize a dictionary to store line colors
+        line_colors = {}
 
-        # # Function to generate a random color
-        # def random_color():
-        #     return tuple(np.random.randint(0, 255, 3).tolist())
+        # Function to generate a random color
+        def random_color():
+            return tuple(np.random.randint(0, 255, 3).tolist())
     
-        # for i, point_left in enumerate(pts_l):
-        #     x, y = point_left
-        #     x = int(x)
-        #     y = int(y)
-        #     # Compute the corresponding epipolar line in the right image
-        #     line = np.dot(F, [x, y, 1])
-        #     # Calculate two points on the epipolar line
-        #     pt1 = (0, int(-line[2] / line[1]))  # (0, y1)
-        #     pt2 = (r_img.shape[1], int(-(line[0] * r_img.shape[1] + line[2]) / line[1]))  # (width, y2)
-        #     # Generate a random color for the line
-        #     color = random_color()
-        #     # Store the color in the dictionary
-        #     line_colors[i] = color
-        #     # Draw the epipolar line on the left image
-        #     l_img = cv2.line(l_img, pt1, pt2, line_colors[i], 1)  # Green color, line thickness = 1
+        for i, point_left in enumerate(pts_l):
+            x, y = point_left
+            x = int(x)
+            y = int(y)
+            # Compute the corresponding epipolar line in the right image
+            line = np.dot(F, [x, y, 1])
+            # Calculate two points on the epipolar line
+            pt1 = (0, int(-line[2] / line[1]))  # (0, y1)
+            pt2 = (r_img.shape[1], int(-(line[0] * r_img.shape[1] + line[2]) / line[1]))  # (width, y2)
+            # Generate a random color for the line
+            color = random_color()
+            # Store the color in the dictionary
+            line_colors[i] = color
+            # Draw the epipolar line on the left image
+            l_img = cv2.line(l_img, pt1, pt2, line_colors[i], 1)  # Green color, line thickness = 1
 
-        # # Draw epipolar lines on the right image
-        # for i, point_right in enumerate(pts_r):
-        #     x, y = point_right
-        #     x = int(x)
-        #     y = int(y)
+        # Draw epipolar lines on the right image
+        for i, point_right in enumerate(pts_r):
+            x, y = point_right
+            x = int(x)
+            y = int(y)
             
-        #     # Compute the corresponding epipolar line in the left image
-        #     line = np.dot(F.T, [x, y, 1])
+            # Compute the corresponding epipolar line in the left image
+            line = np.dot(F.T, [x, y, 1])
             
-        #     # Calculate two points on the epipolar line
-        #     pt1 = (0, int(-line[2] / line[1]))  # (0, y1)
-        #     pt2 = (l_img.shape[1], int(-(line[0] * l_img.shape[1] + line[2]) / line[1]))  # (width, y2)
+            # Calculate two points on the epipolar line
+            pt1 = (0, int(-line[2] / line[1]))  # (0, y1)
+            pt2 = (l_img.shape[1], int(-(line[0] * l_img.shape[1] + line[2]) / line[1]))  # (width, y2)
             
-        #     # Draw the epipolar line on the right image
-        #     r_img = cv2.line(r_img, pt1, pt2, line_colors[i], 1)  # Green color, line thickness = 1
-        # cv2.imshow("Left Image with Epipolar Lines",l_img)
-        # cv2.imshow("Right Image with Epipolar Lines",r_img)
+            # Draw the epipolar line on the right image
+            r_img = cv2.line(r_img, pt1, pt2, line_colors[i], 1)  # Green color, line thickness = 1
+        cv2.imshow("Left Image with Epipolar Lines",l_img)
+        cv2.imshow("Right Image with Epipolar Lines",r_img)
 
         cv2.waitKey(0)
         cv2.destroyAllWindows()
