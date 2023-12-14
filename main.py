@@ -7,7 +7,7 @@ import sys
 from calibrate import calibrate_camera
 from image_helper import ImageHelper
 from feature_helper import FeatureHelper
-from bundle_adjustment import bundle_adjustment
+from bundle_adjustment import BundleAdjustment
 
 '''
 Example python command: python3 main.py --data=calibration/
@@ -18,6 +18,7 @@ def main(args):
     # img_helper = ImageHelper(args['data'])
     img_helper = ImageHelper('imgs/sfm/')
     feature_helper = FeatureHelper()
+    bundle_adjustment = BundleAdjustment()
     
     ## Load Images
     print("Loading Images...",end="\t", flush=True)
@@ -94,8 +95,13 @@ def main(args):
         - Updated Rotation, Translation, and 3D point estimates
     '''    
     print("Performing Bundle Adjustment...",end="\t", flush=True)
-    Rs, ts, pts_3d = bundle_adjustment(K, Rs, ts, pts_3d, helper_list)
+    Rs, ts, pts_3d = bundle_adjustment.run(K, Rs, ts, pts_3d, helper_list)
     print("Finished!")
+
+    fig = plt.figure()
+    ax = fig.add_subplot(111, projection='3d')
+    ax.scatter(pts_3d[:,0], pts_3d[:,1], pts_3d[:,2])
+    plt.show()
 
     pass
 
