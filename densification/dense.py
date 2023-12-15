@@ -8,7 +8,7 @@ import matplotlib.pyplot as plt
 
 from image_rectification import ImageRectification
 from disparity import Disparity
-
+from robust_homography import RobustHomography
 
 def resize_img(img,ratio=1):
     new_width = int(img.shape[1] * ratio)
@@ -41,6 +41,7 @@ if __name__ == '__main__':
 
     ## Initialize Depth Classes
     img_rectifier = ImageRectification(K, dist_coeff)
+    homography_calculator = RobustHomography(1000,s=4,eps=100,N=20)
     patch_sz = args['patch_size']
     d_max = args['d_max']
     disp = Disparity(patch_sz, d_max)
@@ -111,14 +112,12 @@ if __name__ == '__main__':
         # cv2.destroyAllWindows()
 
         ## 7 Arrangement - Pretty Good Results
-        R_prev2cur = prev_R @ cur_R.T
-        T_prev2cur = prev_R - R_prev2cur @ cur_T
-        prev_img_rect, cur_img_rect = img_rectifier.rectify(cur_img, prev_img, R_prev2cur, T_prev2cur)
-        img_rectifier.draw_epipolar_lines(prev_img_rect, cur_img_rect)
         # R_prev2cur = cur_R @ prev_R.T
         # T_prev2cur = cur_T - prev_T
         # prev_img_rect, cur_img_rect = img_rectifier.rectify(prev_img, cur_img, R_prev2cur, T_prev2cur)
-        # img_rectifier.draw_epipolar_lines(cur_img_rect, prev_img_rect)
+        cur_img_rect, prev_img_rect = homography_calculator.rectify_imgs(cur_img,prev_img)
+        img_rectifier.draw_epipolar_lines(cur_img_rect, prev_img_rect)
+
         
         l_img_offset = 0#-30
         # # Display Rectified Images
@@ -138,9 +137,9 @@ if __name__ == '__main__':
         print("Computing disparity for image",img_name)
         r_img = cv2.cvtColor(prev_img,cv2.COLOR_BGR2GRAY)
         l_img = cv2.cvtColor(cur_img,cv2.COLOR_BGR2GRAY)
-        disparity_img = disp.compute(l_img, r_img, l_img_offset) # ASSUMES IMAGES ARE RECTILINEAR!
+        # disparity_img = disp.compute(l_img, r_img, l_img_offset) # ASSUMES IMAGES ARE RECTILINEAR!
         # disparity_img = disp.compute_disparity_cgpt(l_img, r_img)
-        # disparity_img = stereo.compute(l_img,r_img)
+        disparity_img = stereo.compute(l_img,r_img)
 
         # Compute & Save Depth Image
         depth_map = disparity_img

@@ -5,6 +5,8 @@ import pickle as pkl
 import cv2
 import numpy as np
 
+import open3d as o3d
+
 from image_rectification import ImageRectification
 from disparity import Disparity
 
@@ -61,14 +63,34 @@ if __name__ == '__main__':
     img_rectifier.draw_epipolar_lines(img1,img2)
 
     ## Compute Disparity - patch_size=21, d_max=64 for test statue image
-    disparity = disp.compute(img1_gray,img2_gray)
+    # disparity = disp.compute(img1_gray,img2_gray)
     # disparity = disp.compute_disparity_cgpt(img1_gray,img2_gray)
-    # disparity = stereo.compute(img1_gray,img2_gray)
+    disparity = stereo.compute(img1_gray,img2_gray)
 
-    depth_map = disparity
-    depth_map = cv2.normalize(depth_map, None, 0, 255, cv2.NORM_MINMAX)
-    depth_map = depth_map.astype(np.uint8)
-    colored_image = cv2.applyColorMap(depth_map, cv2.COLORMAP_JET)
+    disparity = disparity
+    disparity = cv2.normalize(disparity, None, 0, 255, cv2.NORM_MINMAX)
+    disparity = disparity.astype(np.uint8)
+    colored_image = cv2.applyColorMap(disparity, cv2.COLORMAP_JET)
     cv2.imshow("Disparity Map",colored_image)
     cv2.waitKey(0)
     cv2.destroyAllWindows()
+
+    ## Compute depth
+    # print("Computing & Saving dense depth map for image",img_name)
+    # f = K[0,0]#img_rectifier.new_K[0,0]
+    # b = np.linalg.norm(T_prev2cur,2)
+    depth_map = np.zeros_like(disparity)
+    colors = []
+    points = []
+    for i in range(depth_map.shape[0]):
+        for j in range(depth_map.shape[1]):
+            if disparity[i,j] > 0:
+                depth_map[i,j] = disparity[i,j]#f * b / disparity[i,j]
+            else:
+                depth_map[i,j] = 0
+            points.append([i,j,depth_map[i,j]])
+            colors.append([img1[i,j,2],img1[i,j,1],img1[i,j,0]])
+    pcd = o3d.geometry.PointCloud()
+    pcd.points = o3d.utility.Vector3dVector(points)
+    pcd.colors = o3d.utility.Vector3dVector(np.array(colors)/255.0)
+    o3d.io.write_point_cloud("test1_pc.ply",pcd,write_ascii=True)

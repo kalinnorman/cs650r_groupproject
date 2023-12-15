@@ -27,10 +27,13 @@
             // ]
 
             // Disparity Simulation Tests
-            "args": [
-                "--patch_size=3",
-                "--d_max=2"
-            ]
+            // "args": [
+            //     "--patch_size=3",
+            //     "--d_max=2"
+            // ]
+
+            // Homography test
+            
         }
     ]
 }
