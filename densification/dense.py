@@ -137,9 +137,9 @@ if __name__ == '__main__':
         print("Computing disparity for image",img_name)
         r_img = cv2.cvtColor(prev_img,cv2.COLOR_BGR2GRAY)
         l_img = cv2.cvtColor(cur_img,cv2.COLOR_BGR2GRAY)
-        disparity_img = disp.compute(l_img, r_img, l_img_offset) # ASSUMES IMAGES ARE RECTILINEAR!
+        # disparity_img = disp.compute(l_img, r_img, l_img_offset) # ASSUMES IMAGES ARE RECTILINEAR!
         # disparity_img = disp.compute_disparity_cgpt(l_img, r_img)
-        # disparity_img = stereo.compute(l_img,r_img)
+        disparity_img = stereo.compute(l_img,r_img)
 
         # Compute & Save Depth Image
         depth_map = disparity_img
