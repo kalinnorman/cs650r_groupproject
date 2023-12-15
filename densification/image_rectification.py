@@ -29,7 +29,7 @@ class ImageRectification():
 
         rectify_scale= 1
         T_zeroed = np.zeros_like(T)
-        T_zeroed[0:2] = T[0:2]
+        T_zeroed[:2] = T[:2]
         # print("T:",T)
         rect_l, rect_r, proj_mat_l, proj_mat_r, Q, roi_l, roi_r = cv2.stereoRectify(self.new_K, self.dist, self.new_K, self.dist, (w, h), R, T_zeroed)#, rectify_scale, (0,0))
         # for elem in Q:

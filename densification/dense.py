@@ -90,7 +90,7 @@ if __name__ == '__main__':
         cur_img = resize_img(cv2.imread(imgs_filepath + img_name), img_ratio)
         cur_R, _ = cv2.Rodrigues(np.array(img_data["rotation"]))
         cur_T = np.array(img_data["translation"])
-        # img_rectifier.draw_epipolar_lines(cur_img, prev_img)
+        img_rectifier.draw_epipolar_lines(cur_img, prev_img)
 
         # Rectify Images
         print("Performing image rectification for image",img_name)
@@ -111,9 +111,13 @@ if __name__ == '__main__':
         # cv2.destroyAllWindows()
 
         ## 7 Arrangement - Pretty Good Results
-        R_prev2cur = cur_R @ prev_R.T
-        T_prev2cur = cur_T - prev_T
-        prev_img_rect, cur_img_rect = img_rectifier.rectify(prev_img, cur_img, R_prev2cur, T_prev2cur)
+        R_prev2cur = prev_R @ cur_R.T
+        T_prev2cur = prev_R - R_prev2cur @ cur_T
+        prev_img_rect, cur_img_rect = img_rectifier.rectify(cur_img, prev_img, R_prev2cur, T_prev2cur)
+        img_rectifier.draw_epipolar_lines(prev_img_rect, cur_img_rect)
+        # R_prev2cur = cur_R @ prev_R.T
+        # T_prev2cur = cur_T - prev_T
+        # prev_img_rect, cur_img_rect = img_rectifier.rectify(prev_img, cur_img, R_prev2cur, T_prev2cur)
         # img_rectifier.draw_epipolar_lines(cur_img_rect, prev_img_rect)
         
         l_img_offset = 0#-30

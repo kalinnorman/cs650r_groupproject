@@ -50,10 +50,10 @@ if __name__ == '__main__':
     stereo = cv2.StereoBM_create(numDisparities=d_max, blockSize=patch_sz)
 
     ## Load Images
-    img1 = resize_img(cv2.imread(args['img1_filepath']),0.1)
-    img2 = resize_img(cv2.imread(args['img2_filepath']),0.1)
-    # img1 = cv2.imread(args['img1_filepath'])
-    # img2 = cv2.imread(args['img2_filepath'])
+    # img1 = resize_img(cv2.imread(args['img1_filepath']),0.1)
+    # img2 = resize_img(cv2.imread(args['img2_filepath']),0.1)
+    img1 = cv2.imread(args['img1_filepath'])
+    img2 = cv2.imread(args['img2_filepath'])
     img1_gray = cv2.cvtColor(img1, cv2.COLOR_BGR2GRAY)
     img2_gray = cv2.cvtColor(img2, cv2.COLOR_BGR2GRAY)
     
