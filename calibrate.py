@@ -451,7 +451,12 @@ def _compute_distortion_parameters(obj_points, image_points, K, all_Rs, all_Ts, 
             and num_pairs == len(all_Rs) \
             and num_pairs == len(all_Ts), 'obj_points, image_points, all_Rs, and all_Ts must have the same number of elements'
 
-    num_rows = num_pairs * 2
+    num_pts = len(obj_points[0])
+    for i in range(num_pairs):
+        assert num_pts == len(obj_points[i]),  'Inconsistent number of matching points within set'
+        assert num_pts == len(image_points[i]), 'Inconsistent number of matching points within set'
+
+    num_rows = num_pairs * num_pts * 2
     num_cols = 5 # 3 For radial, 2 for tangential
     M = np.zeros( (num_rows, num_cols) )
     B = np.zeros( (num_rows, 1       ) )
@@ -459,9 +464,7 @@ def _compute_distortion_parameters(obj_points, image_points, K, all_Rs, all_Ts, 
     ctr_x = (img_width_height[0] - 1) / 2.0
     ctr_y = (img_width_height[1] - 1) / 2.0
     
-
-    # TODO: This approach seems problematic... Working in sensor space doesn't seem quite right.  
-    # Shouldn't we take observed points and invert them to the normalized projection space and then model the radial delta? 
+    sol_i = 0
     for i in range(num_pairs):
 
         obj_points_with_z = np.concatenate( (obj_points[i], np.zeros( (obj_points[i].shape[0], 1) )), axis=1)
@@ -471,36 +474,41 @@ def _compute_distortion_parameters(obj_points, image_points, K, all_Rs, all_Ts, 
         norm_projected_obj_points = ( extrinsic_mat @ norm_projected_obj_points.T ).T
         projected_obj_points = ( K @ norm_projected_obj_points.T ).T
 
-        norm_projected_obj_points = _to_non_homogen( norm_projected_obj_points ).reshape(-1)
-        projected_obj_points      = _to_non_homogen( projected_obj_points ).reshape(-1)
-
-        observed_img_points  = image_points[i]
-        observed_img_points  = observed_img_points.reshape(-1)
-
-        i0 = i*2
-        i1 = i*2+1
-
-        Xd = projected_obj_points[i0] - ctr_x
-        Yd = projected_obj_points[i1] - ctr_y
-        norm_proj_Xd = norm_projected_obj_points[i0] - 0.0
-        norm_proj_Yd = norm_projected_obj_points[i1] - 0.0
-        r = np.sqrt( norm_proj_Xd**2 + norm_proj_Yd**2 )
+        norm_projected_obj_points = _to_non_homogen( norm_projected_obj_points )
+        projected_obj_points      = _to_non_homogen( projected_obj_points )
 
 
-        M[i0][0] = Xd * (r*r)
-        M[i0][1] = Xd * (r*r*r*r)
-        M[i0][2] = Xd * (r*r*r*r*r*r)
-        M[i0][3] = 2  * Xd * Yd
-        M[i0][4] = 2*Xd*Xd + (r*r)
-        B[i0]    = observed_img_points[i0] - projected_obj_points[i0]
+        observed_img_pts  = image_points[i]
 
+        for j in range(num_pts):
+            obs_x  = observed_img_pts[j][0] - ctr_x
+            obs_y  = observed_img_pts[j][1] - ctr_y
+            norm_proj_x = norm_projected_obj_points[j][0]
+            norm_proj_y = norm_projected_obj_points[j][1]
+            proj_x = projected_obj_points[j][0] - ctr_x
+            proj_y = projected_obj_points[j][1] - ctr_y
 
-        M[i1][0] = Yd * (r*r)
-        M[i1][1] = Yd * (r*r*r*r)
-        M[i1][2] = Yd * (r*r*r*r*r*r)
-        M[i1][3] = 2*Yd*Yd + (r*r)
-        M[i1][4] = 2  * Yd * Xd
-        B[i1]    = observed_img_points[i1] - projected_obj_points[i1]
+            delta_x = obs_x - proj_x
+            delta_y = obs_y - proj_y
+
+            r = np.sqrt( norm_proj_x**2 + norm_proj_y**2 )
+
+            M[sol_i][0] = proj_x * (r**2)
+            M[sol_i][1] = proj_x * (r**4)
+            M[sol_i][2] = proj_x * (r**6)
+            M[sol_i][3] = 2*proj_x*proj_y
+            M[sol_i][4] = 2*(proj_x**2) + (r**2)
+            B[sol_i]    = delta_x
+            sol_i += 1
+
+            M[sol_i][0] = proj_y * (r**2)
+            M[sol_i][1] = proj_y * (r**4)
+            M[sol_i][2] = proj_y * (r**6)
+            M[sol_i][3] = 2*(proj_y**2) + (r**2)
+            M[sol_i][4] = 2*proj_x*proj_y
+            B[sol_i]    = delta_y
+            sol_i += 1
+
 
     solution, residuals, rank, singular_values = np.linalg.lstsq(M, B, rcond=None)
 
@@ -509,13 +517,6 @@ def _compute_distortion_parameters(obj_points, image_points, K, all_Rs, all_Ts, 
     k2 = solution[2]
     t0 = solution[3]
     t1 = solution[4]
-
-    # DEBUG 
-    # k0 = -0.23
-    # k1 = 0.06167
-    # k2 = -0.000014
-    # t0 = 0
-    # t1 = 0
 
     return k0, k1, k2, t0, t1
 
