@@ -1,6 +1,8 @@
 import numpy as np
 import matplotlib.pyplot as plt
 
+import time
+
 class BundleAdjustment():
     def __init__(self):
         self.K = None
@@ -27,6 +29,18 @@ class BundleAdjustment():
                 self.num_3d_pts += 1
         self.pts_3d = np.array(pts_3d)
         self.pts_3d_idxs = np.array(pts_3d_idxs)
+
+        # self.K = intrinsics
+        # self.pts_3d = full_pts_3d
+        # self.num_3d_pts, self.num_imgs, _ = img_pt_and_kp_list.shape
+        # pts_2d = np.zeros((self.num_3d_pts, self.num_imgs, 3))
+        # for i in range(self.num_3d_pts):
+        #     for j in range(self.num_imgs):
+        #         if not np.isnan(img_pt_and_kp_list[i,j,0]):
+        #             pts_2d[i,j,0] = 1
+        #             pts_2d[i,j,1:] = img_pt_and_kp_list[i,j,:]
+        # self.pts_2d = pts_2d
+
         # Convert rotations to quaternions and store
         rot_params = []
         for R in rotations:
@@ -40,7 +54,7 @@ class BundleAdjustment():
             self.num_imgs += 1
         self.trans_params = np.array(trans_params).flatten()
         # Create array mapping 2D image points to 3D points (row i corresponds to 3D point i, column j corresponds to image j)
-        pts_2d = 0 * np.ones((self.num_3d_pts, self.num_imgs, 3))
+        pts_2d = np.zeros((self.num_3d_pts, self.num_imgs, 3))
         for j in range(len(img_pt_and_kp_list)):
             temp_list = img_pt_and_kp_list[j]
             for k in range(len(temp_list)):
@@ -76,7 +90,10 @@ class BundleAdjustment():
         v = 2
         p = p_knot.copy()
         # Initial Jacobian and error calc
+        t1 = time.time()
         J, xhat = self.calc_J_and_xhat(p, num_proj_params, jac_cols)
+        print()
+        print("Time to calculate J and xhat:", time.time() - t1)
         eps_p = x - xhat
         A = J.T @ J
         g = J.T @ eps_p
@@ -100,7 +117,7 @@ class BundleAdjustment():
                     p_new = p + delta_p
                     p_new = self._normalize_quaternions_in_p(p_new, num_proj_params)
                     J, xhat = self.calc_J_and_xhat(p_new, num_proj_params, jac_cols)
-                    rho = (np.linalg.norm(eps_p)**2 - np.linalg.norm(x - xhat)**2) / (delta_p.T * (mu * delta_p + g))
+                    rho = (np.linalg.norm(eps_p)**2 - np.linalg.norm(x - xhat)**2) / np.dot(delta_p, (mu * delta_p + g))
                     if rho > 0:
                         stop = np.linalg.norm(eps_p) - np.linalg.norm(x - xhat) < eps_4 * np.linalg.norm(eps_p)
                         p = p_new.copy()
@@ -115,6 +132,8 @@ class BundleAdjustment():
                         mu = mu * v
                         v = 2 * v
             stop = np.linalg.norm(eps_p) <= eps_3
+        if k >= k_max and not stop:
+            print("Bundle Adjustment: Max Iterations Reached in Levengerg-Marquardt")
         # Extract updated rotations, translations and 3D points
         Rs = []
         ts = []

@@ -1,6 +1,7 @@
 import cv2 as cv
 import numpy as np
 import pickle
+from tqdm import tqdm
 
 class FeatureHelper():
     def __init__(self):
@@ -131,7 +132,7 @@ class FeatureHelper():
         # Update the 3d to be a list of None's the same length as the descriptors
         self.global_matches['3d'] = [None for i in range(len(self.global_matches['des']))]
     
-    def estimate_pairwise_poses_and_3d_points(self, K):
+    def estimate_pairwise_poses_and_3d_points(self, K, max_matches_per_img = None):
         '''
         Estimates the pairwise poses and 3d points from the matches.
         This is done via estimating the essential matrix, recovering the pose from the essential matrix, and triangulating the points.
@@ -209,6 +210,15 @@ class FeatureHelper():
                 kpidx = self.global_matches[key][2].index(mkp)
                 kp_idxs_masked.append(kpidx)
                 des_idxs_masked.append(self.global_matches[key][1][0][self.global_matches[key][1][1].index(kpidx)])
+
+            # Limit the number of matches to a maximum value
+            if max_matches_per_img is not None and len(des_idxs_masked) > max_matches_per_img:
+                temp_idxs_list = list(range(len(des_idxs_masked)))
+                temp_idxs_to_keep = np.random.choice(temp_idxs_list, size=max_matches_per_img, replace=False)
+                des_idxs_masked = [des_idxs_masked[i] for i in temp_idxs_to_keep]
+                kp_idxs_masked = [kp_idxs_masked[i] for i in temp_idxs_to_keep]
+                pts_3d = pts_3d[:,temp_idxs_to_keep]
+
             # Update the 3d points, and if any existing 3d points match with the new 3d points, average the estimated locations
             for i in range(len(des_idxs_masked)):
                 if self.global_matches['3d'][des_idxs_masked[i]] is None:
@@ -216,19 +226,172 @@ class FeatureHelper():
                 else:
                     self.global_matches['3d'][des_idxs_masked[i]] = (self.global_matches['3d'][des_idxs_masked[i]] + pts_3d[:,i]) / 2
             # Add info for the latest image pair to the list
-            if len(img_desidx_kpval_list) == 0:
-                prev_img_list = []
-                for i in range(len(des_idxs_masked)):
+            prev_img_list = []
+            for i in range(len(des_idxs_masked)):
+                if [des_idxs_masked[i], prv_pts_masked[i]] not in prev_img_list:
                     prev_img_list.append([des_idxs_masked[i], prv_pts_masked[i]])
-                img_desidx_kpval_list.append(prev_img_list)
             cur_img_list = []
             for i in range(len(des_idxs_masked)):
-                cur_img_list.append([des_idxs_masked[i], cur_pts_masked[i]])
+                if [des_idxs_masked[i], cur_pts_masked[i]] not in cur_img_list:
+                    cur_img_list.append([des_idxs_masked[i], cur_pts_masked[i]])
+            if len(img_desidx_kpval_list) == 0:
+                img_desidx_kpval_list.append(prev_img_list)
+            else:
+                for templist in prev_img_list:
+                    try:
+                        if templist not in img_desidx_kpval_list[-1]:
+                            img_desidx_kpval_list[-1].append(templist)
+                    except Exception as e: # If the descriptor matches, but the keypoint doesn't, it throws and error and we want to remove those from the list to avoid bad matches (if possible)
+                        if 'truth value of an array with more than one element' in str(e):
+                            # If the descriptor matches, but the keypoint doesn't, remove the descriptor from both lists
+                            img_desidx_kpval_list[-1] = [i for i in img_desidx_kpval_list[-1] if i[0] != templist[0]]
+                            cur_img_list = [i for i in cur_img_list if i[0] != templist[0]]
+                        else:
+                            raise e
             img_desidx_kpval_list.append(cur_img_list)
             # Update the previous key
             prev_key = key
         # Return the rotation and translation lists, 3d points, and the list of lists of descriptors and keypoints
         return Rs, ts, self.global_matches['3d'], img_desidx_kpval_list
     
+    def est_stuff(self, imgs, K):
+        # Initialization
+        img_names = list(imgs.keys())
+        kp, des = [], []
+        Rs, ts = [], []
+        pts_3d = None
+        pts_3d_to_kpts = None
+        # Identify all SIFT features for each image
+        for i in tqdm(range(len(img_names))):
+            kptemp, destemp = self.sift.detectAndCompute(imgs[img_names[i]], None)
+            kp.append(kptemp)
+            des.append(destemp)
+        # Exhaustive matching between all images, identifying everything up through triangulated points
+        for i in tqdm(range(len(img_names)-1)):
+            # Rtemp, ttemp = [], []
+            kp1, des1 = kp[i], des[i]
+            for j in range(i+1, len(img_names)):
+                kp2, des2 = kp[j], des[j]
+                # Find all matches
+                matches = self.bfm.knnMatch(queryDescriptors=des1, trainDescriptors=des2, k=2)
+                queryidxs = []
+                trainidxs = []
+                for m, n in matches:
+                    if m.distance < 0.75 * n.distance:
+                        queryidxs.append(m.queryIdx)
+                        trainidxs.append(m.trainIdx)
+                # Estimate the essential matrix and recover relative pose from the essential matrix
+                matched_kp1 = np.array([kp1[i].pt for i in queryidxs])
+                matched_kp2 = np.array([kp2[i].pt for i in trainidxs])
+                E, mask = cv.findEssentialMat(matched_kp1, matched_kp2, cameraMatrix=K, method=cv.RANSAC, prob=0.999, threshold=1.0)
+                _, R, t, mask = cv.recoverPose(E, matched_kp1, matched_kp2, cameraMatrix=K, mask=mask)
+                # Treat img 1 as the origin, and convert R and t to be a global represenation
+                if i == 0: # On the first iteration we are doing everything compared to img 1, the origin
+                    if j == i+1:
+                        Rs.append(np.eye(3))
+                        ts.append(np.zeros((3,1)))
+                    Rs.append(R)
+                    ts.append(t)
+                else: # On all other iterations we are comparing to the prev image and need to convert to global
+                    R1toj = R @ Rs[i]
+                    Rs[j] = R1toj # Update previous global estimate with new compound one (more matches so we trust newer estimate more)
+                # Triangulate 3d points using masked 2d points
+                P2 = K @ np.hstack((Rs[j], ts[j]))
+                P1 = K @ np.hstack((Rs[i], ts[i]))
+                pts1_masked = matched_kp1[mask.ravel()==1]
+                pts2_masked = matched_kp2[mask.ravel()==1]
+                pts4d = cv.triangulatePoints(P1, P2, pts1_masked.T, pts2_masked.T)
+                pts3d = pts4d[:3,:] / pts4d[3,:]
+                pts3d = pts3d.T
+                if pts_3d is None:
+                    pts_3d = pts3d
+                    pts_3d_to_kpts = np.empty((len(pts3d), len(img_names), 2))
+                    pts_3d_to_kpts.fill(np.nan)
+                    for k in range(len(pts3d)):
+                        pts_3d_to_kpts[k,i,:] = pts1_masked[k]
+                        pts_3d_to_kpts[k,j,:] = pts2_masked[k]
+                else:
+                    # Find any existing 3d points that match with the triangulated points
+                    existing_3d_pt_idxs = []
+                    corresponding_2d_idxs = []
+                    for k, pt in enumerate(pts1_masked):
+                        for l, val in enumerate(pts_3d_to_kpts[:,i,:]):
+                            if np.all(np.equal(val, pt)):
+                                existing_3d_pt_idxs.append(l)
+                                corresponding_2d_idxs.append(k)
+                    # Update existing items with the new triangulated points
+                    for k, l in zip(corresponding_2d_idxs, existing_3d_pt_idxs):
+                        # Average the triangulated point with the existing point
+                        pts_3d[l] = (pts_3d[l] + pts3d[k]) / 2
+                        # Update the 2d point correspondences
+                        pts_3d_to_kpts[l,j,:] = pts2_masked[k]
+                    # Remove the items we've already handled from the new triangulated points and 2d points
+                    pts3d = np.delete(pts3d, corresponding_2d_idxs, axis=0)
+                    pts1_masked = np.delete(pts1_masked, corresponding_2d_idxs, axis=0)
+                    pts2_masked = np.delete(pts2_masked, corresponding_2d_idxs, axis=0)
+                    # Do it again for the other image
+                    existing_3d_pt_idxs = []
+                    corresponding_2d_idxs = []
+                    for k, pt in enumerate(pts2_masked):
+                        for l, val in enumerate(pts_3d_to_kpts[:,j,:]):
+                            if np.all(np.equal(val, pt)):
+                                existing_3d_pt_idxs.append(l)
+                                corresponding_2d_idxs.append(k)
+                    # Update existing items with the new triangulated points
+                    for k, l in zip(corresponding_2d_idxs, existing_3d_pt_idxs):
+                        # Average the triangulated point with the existing point
+                        pts_3d[l] = (pts_3d[l] + pts3d[k]) / 2
+                        # Update the 2d point correspondences
+                        pts_3d_to_kpts[l,i,:] = pts1_masked[k]
+                    # Remove the items we've already handled from the new triangulated points and 2d points
+                    pts3d = np.delete(pts3d, corresponding_2d_idxs, axis=0)
+                    pts1_masked = np.delete(pts1_masked, corresponding_2d_idxs, axis=0)
+                    pts2_masked = np.delete(pts2_masked, corresponding_2d_idxs, axis=0)
+                    # Add the new points to the two arrays
+                    temp_3dtokp = np.empty((len(pts3d), len(img_names), 2))
+                    temp_3dtokp.fill(np.nan)
+                    temp_3dtokp[:,i,:] = pts1_masked
+                    temp_3dtokp[:,j,:] = pts2_masked
+                    pts_3d = np.vstack((pts_3d, pts3d))
+                    pts_3d_to_kpts = np.vstack((pts_3d_to_kpts, temp_3dtokp))
+        # Trim the results to only keep 1000 points
+        pts_3d_trimmed = np.zeros((1000,3))
+        pts_3d_to_kpts_trimmed = np.empty((1000, len(img_names), 2))
+        pts_3d_to_kpts_trimmed.fill(np.nan)
+        idxs_used = []
+        idxs_to_choose_from = list(range(len(pts_3d)))
+        cur_idx = 0
+        num_pts_shared = len(img_names)
+        num_imgs = len(img_names)
+        while cur_idx < 1000:
+            rand_idxs = np.random.choice(idxs_to_choose_from, len(idxs_to_choose_from), replace=False)
+            for rand_idx in rand_idxs:
+                if rand_idx not in idxs_used:
+                    if np.sum(np.isnan(pts_3d_to_kpts[rand_idx,:,0])) <= num_imgs - num_pts_shared:
+                        idxs_used.append(rand_idx)
+                        pts_3d_trimmed[cur_idx,:] = pts_3d[rand_idx,:]
+                        pts_3d_to_kpts_trimmed[cur_idx,:,:] = pts_3d_to_kpts[rand_idx,:,:]
+                        cur_idx += 1
+                        if cur_idx >= 1000:
+                            break
+            num_pts_shared -= 1
 
+        pts_3d = pts_3d_trimmed
+        pts_3d_to_kpts = pts_3d_to_kpts_trimmed
 
+        # import matplotlib.pyplot as plt
+        # fig = plt.figure()
+        # # Create 2d image to show where the points are
+        # ro, co, _ = pts_3d_to_kpts.shape
+        # pts_3d_to_kpts_img = np.zeros((ro, co))
+        # # Assign a value of 1 if there is a keypoint at that location
+        # for i in range(len(pts_3d_to_kpts_img)):
+        #     for j in range(len(pts_3d_to_kpts_img[i])):
+        #         if not np.isnan(pts_3d_to_kpts[i,j,0]):
+        #             pts_3d_to_kpts_img[i,j] = 1
+        # # Show the image
+        # plt.imshow(pts_3d_to_kpts_img)
+        # plt.show()
+
+        # Return the results
+        return Rs, ts, pts_3d, pts_3d_to_kpts
