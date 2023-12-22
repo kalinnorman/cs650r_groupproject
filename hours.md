@@ -27,6 +27,7 @@
 | 12/12 | Looking into image rectification | 4 |
 | 12/13 | Looking into image rectification | 1.5 |
 | 12/14 | Looking into disparity & image rectification computations | 5.75 |
-| 12/15 | Coding up homography computation to align two images & then compute disparity | 7.5, 4pm- |
-|| **Total hours worked thus far (updated 12/15 half)** | **76.75** |
-|| **Hours Remaining out of 80 hours required (updated 12/15 half)** | **3.25** |
+| 12/15 | Coding up homography computation to align two images & then compute disparity | 8.75 |
+| 12/16 | Finished presentation | 2 |
+|| **Total hours worked thus far** | **80** |
+|| **Hours Remaining out of 80 hours required** | **0** |
